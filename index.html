@@ -82,6 +82,16 @@
     }
     .btn-primary:hover { background: rgba(84, 168, 199, 0.34); }
 
+    .btn-danger {
+      background: var(--red-bg);
+      border: 1px solid var(--red);
+      color: #f3b8b8;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .btn-danger:hover { background: rgba(196, 92, 92, 0.28); }
+
     .toggle-track {
       width: 40px;
       height: 22px;
@@ -112,9 +122,8 @@
   <div class="shell">
 
     <!-- HEADER: CLEAR STATUS + QUICK ACTIONS -->
-    <header class="panel p-4 mb-4 flex flex-wrap items-center justify-between gap-4">
+    <header class="panel p-4 mb-3 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3.5">
-        <!-- Mini J.A.R.V.I.S. Core Status Ring -->
         <div class="w-11 h-11 rounded-full flex items-center justify-center shrink-0" style="background: rgba(8,12,18,0.85); border: 1px solid var(--border-hi);">
           <svg viewBox="0 0 64 64" class="w-9 h-9">
             <circle cx="32" cy="32" r="26" fill="none" stroke="#54a8c7" stroke-width="1.6" stroke-dasharray="12 6" class="arc-spin" opacity="0.75"/>
@@ -130,14 +139,20 @@
               <span class="w-1.5 h-1.5 rounded-full" style="background: var(--green);"></span>
               <span id="healthText">Wi-Fi Healthy · Plenty of Speed Available</span>
             </span>
+            <span id="agentModeBadge" onclick="toggleAgentDrawer()" class="px-2.5 py-0.5 rounded text-[11px] font-medium cursor-pointer transition" style="background: var(--amber-bg); border: 1px solid rgba(204,148,68,0.45); color: var(--amber);" title="Click to connect your real home Wi-Fi">
+              ⚡ Demo Mode — Click to Connect Your Real Wi-Fi
+            </span>
           </div>
           <p id="plainSummary" class="text-xs m-0 mt-1" style="color: var(--muted);">
-            7 devices online · Top activity: Living Room Apple TV streaming Netflix · Ad Blocker active
+            8 devices detected (1 unrecognized device) · Top activity: Living Room Apple TV streaming Netflix
           </p>
         </div>
       </div>
 
       <div class="flex items-center gap-2 flex-wrap">
+        <button onclick="toggleAgentDrawer()" class="btn px-3 py-1.5 text-xs font-semibold" style="border-color: var(--amber); color: #f1d4a7;">
+          📡 Connect Real Home Wi-Fi
+        </button>
         <button id="pauseBtn" onclick="toggleLive()" class="btn px-3 py-1.5 text-xs font-medium">
           Pause Live Feed
         </button>
@@ -147,9 +162,94 @@
       </div>
     </header>
 
+    <!-- CONNECT REAL HOME WI-FI DRAWER -->
+    <div id="liveAgentDrawer" class="hidden panel p-4 mb-4" style="border-color: var(--cyan); background: linear-gradient(180deg, rgba(18, 32, 46, 0.96) 0%, rgba(11, 18, 28, 0.98) 100%);">
+      <div class="flex flex-wrap items-start justify-between gap-3 pb-3 mb-3 border-b" style="border-color: var(--border);">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded text-[11px] font-semibold" style="background: var(--cyan-bg); color: var(--cyan);">LIVE HOME WI-FI SCANNER</span>
+            <h2 class="text-sm font-semibold m-0">Replace Sample Devices with Your Real Home Wi-Fi</h2>
+          </div>
+          <p class="text-xs m-0 mt-1" style="color: var(--muted);">
+            Web browsers aren't allowed to scan your private Wi-Fi router directly from a website. Run the 1-file Python Home Agent on your computer to scan your real Wi-Fi devices and stream them into this dashboard.
+          </p>
+        </div>
+        <button onclick="toggleAgentDrawer()" class="btn px-2.5 py-1 text-xs">Close ✕</button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 text-xs">
+        <!-- Step 1: Download 1-File Agent -->
+        <div class="subpanel p-3.5 flex flex-col justify-between gap-2">
+          <div>
+            <div class="font-semibold mb-1" style="color: var(--cyan);">Step 1 — Download the 1-File Home Agent</div>
+            <p class="m-0 mb-2" style="color: var(--muted);">
+              Pick <strong>Windows PowerShell</strong> if you don't have Python installed, or Python for Mac/Linux.
+            </p>
+          </div>
+          <div class="space-y-1.5">
+            <button onclick="downloadWindowsAgentScript()" class="btn-primary w-full py-2 text-xs font-semibold">
+              ⬇ Windows Agent (.ps1 — No Python Needed)
+            </button>
+            <button onclick="downloadHomeAgentScript()" class="btn w-full py-1.5 text-xs font-medium">
+              ⬇ Mac / Linux / Python Agent (.py)
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Run in Terminal -->
+        <div class="subpanel p-3.5 flex flex-col justify-between">
+          <div>
+            <div class="font-semibold mb-1" style="color: var(--amber);">Step 2 — Run It on Your Computer at Home</div>
+            <p class="m-0 mb-1.5" style="color: var(--muted);">
+              <strong>Windows PowerShell</strong> (in Downloads):
+            </p>
+            <code class="block font-mono text-[11px] p-2 rounded select-all mb-2" style="background: var(--bg); color: var(--text);">powershell -ExecutionPolicy Bypass -File .\jarvis_home_agent.ps1</code>
+            <p class="m-0 mb-1" style="color: var(--muted);">
+              <strong>Mac / Linux</strong>:
+            </p>
+            <code class="block font-mono text-[11px] p-1.5 rounded select-all" style="background: var(--bg); color: var(--text);">python3 jarvis_home_agent.py</code>
+          </div>
+        </div>
+
+        <!-- Step 3: Live Link Status -->
+        <div class="subpanel p-3.5 flex flex-col justify-between">
+          <div>
+            <div class="font-semibold mb-1" style="color: var(--green);">Step 3 — Connect Dashboard to Your Agent</div>
+            <p class="m-0 mb-2" style="color: var(--muted);">
+              This page checks <code class="font-mono">http://localhost:8080</code> automatically, or enter your home PC's IP:
+            </p>
+            <div class="flex gap-1.5">
+              <input id="agentUrlInput" type="text" value="http://localhost:8080" class="flex-1 px-2.5 py-1.5 rounded text-xs font-mono" style="background: var(--bg); border: 1px solid var(--border-hi); color: var(--text);" />
+              <button onclick="connectLiveHomeAgent(true)" class="btn-primary px-3 py-1.5 text-xs font-semibold">Connect</button>
+            </div>
+          </div>
+          <div id="agentConnStatus" class="text-[11px] mt-2" style="color: var(--muted);">
+            Status: Waiting for local agent on http://localhost:8080...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UNKNOWN DEVICE SECURITY ALERT BANNER -->
+    <div id="unknownAlertBanner" class="panel p-3.5 mb-4 flex flex-wrap items-center justify-between gap-3" style="border-color: rgba(204, 148, 68, 0.55); background: linear-gradient(90deg, rgba(204,148,68,0.14) 0%, rgba(13,19,28,0.95) 100%);">
+      <div class="flex items-center gap-3">
+        <span class="px-2 py-1 rounded text-xs font-semibold" style="background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(204,148,68,0.4);">
+          ⚠ Unrecognized Device
+        </span>
+        <div class="text-xs">
+          <strong id="unknownAlertTitle" style="color: var(--text);">1 unknown device is using your Wi-Fi: Unknown Android-8F2A (192.168.1.74)</strong>
+          <span class="block sm:inline sm:ml-2" style="color: var(--muted);">You can block &amp; cut off its internet immediately or mark it as trusted.</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="blockAllUnknownDevices()" class="btn-danger px-3 py-1.5 text-xs font-semibold">
+          🚫 Block &amp; Disconnect Unknown Devices
+        </button>
+      </div>
+    </div>
+
     <!-- 4 HUMAN-READABLE SUMMARY CARDS -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-      <!-- Card 1: Current Speed & Capacity -->
       <div class="panel p-4">
         <div class="flex items-center justify-between text-xs mb-1" style="color: var(--muted);">
           <span>Internet Usage Right Now</span>
@@ -168,7 +268,6 @@
         </div>
       </div>
 
-      <!-- Card 2: Biggest Data User -->
       <div class="panel p-4 cursor-pointer" onclick="switchTab('apps')">
         <div class="flex items-center justify-between text-xs mb-1" style="color: var(--muted);">
           <span>Top Data User Today</span>
@@ -184,7 +283,6 @@
         </div>
       </div>
 
-      <!-- Card 3: Ad Blocker & Protection -->
       <div class="panel p-4 cursor-pointer" onclick="switchTab('blocker')">
         <div class="flex items-center justify-between text-xs mb-1" style="color: var(--muted);">
           <span>Ads &amp; Trackers Blocked</span>
@@ -199,18 +297,17 @@
         </div>
       </div>
 
-      <!-- Card 4: Devices & Messages -->
-      <div class="panel p-4 cursor-pointer" onclick="switchTab('messages')">
+      <div class="panel p-4 cursor-pointer" onclick="switchTab('apps')">
         <div class="flex items-center justify-between text-xs mb-1" style="color: var(--muted);">
-          <span>Connected Devices</span>
-          <span style="color: var(--cyan);">Activity log →</span>
+          <span>Wi-Fi Device Security</span>
+          <span id="kpiQuarantineCount" style="color: var(--amber);">1 Unknown</span>
         </div>
         <div class="flex items-baseline gap-2">
-          <span class="text-2xl font-semibold tabular-nums">7</span>
-          <span class="text-xs" style="color: var(--muted);">devices on Wi-Fi</span>
+          <span id="kpiOnlineDevices" class="text-2xl font-semibold tabular-nums">8</span>
+          <span class="text-xs" style="color: var(--muted);">devices on network</span>
         </div>
         <div class="text-xs mt-2" style="color: var(--muted);">
-          Last event: <span id="kpiLastEvent" style="color: var(--text);">Thermostat status update</span>
+          Last event: <span id="kpiLastEvent" style="color: var(--text);">Unknown Android joined</span>
         </div>
       </div>
     </section>
@@ -218,7 +315,7 @@
     <!-- SIMPLE 4-TAB NAVIGATION -->
     <nav class="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 border-b" style="border-color: var(--border);">
       <button onclick="switchTab('apps')" id="tab-apps" class="px-4 py-2 text-xs font-medium rounded-t cursor-pointer transition" style="background: var(--cyan-bg); color: var(--text); border: 1px solid var(--border-hi); border-bottom: 2px solid var(--cyan);">
-        Apps &amp; Devices
+        Apps &amp; Devices (Block / Kick)
       </button>
       <button onclick="switchTab('messages')" id="tab-messages" class="px-4 py-2 text-xs font-medium rounded-t cursor-pointer transition" style="background: transparent; color: var(--muted); border: 1px solid transparent;">
         Messages &amp; Activity
@@ -232,7 +329,7 @@
     </nav>
 
     <!-- =================================================================== -->
-    <!-- TAB 1: APPS & DEVICES (WHO IS USING MY WI-FI?)                      -->
+    <!-- TAB 1: APPS & DEVICES (WITH BLOCK & DISCONNECT CONTROLS)            -->
     <!-- =================================================================== -->
     <div id="panel-apps" class="space-y-4">
       <!-- Live Speed Graph -->
@@ -240,34 +337,49 @@
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <div>
             <h2 class="text-sm font-semibold m-0">Live Home Wi-Fi Speed (Last 60 Seconds)</h2>
-            <p class="text-xs m-0 mt-0.5" style="color: var(--muted);">Shows combined download and upload speed across every device at home</p>
+            <p class="text-xs m-0 mt-0.5" style="color: var(--muted);">Shows combined download and upload speed across all allowed devices</p>
           </div>
           <div class="flex items-center gap-4 text-xs">
             <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm inline-block" style="background: var(--cyan);"></span> Download</span>
             <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm inline-block" style="background: var(--green);"></span> Upload</span>
           </div>
         </div>
-        <div class="w-full h-40">
+        <div class="w-full h-36">
           <canvas id="trafficCanvas" class="w-full h-full block"></canvas>
         </div>
       </div>
 
-      <!-- Two-column layout: Top Apps + Connected Devices -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <!-- Apps Table (2 cols) -->
-        <div class="lg:col-span-2 panel p-4">
+      <!-- Two-column layout: Connected Devices (Block/Kick) + Top Apps -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <!-- Devices on Your Wi-Fi (5 cols) -->
+        <div class="lg:col-span-5 panel p-4">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <h2 class="text-sm font-semibold m-0">Devices on Your Wi-Fi</h2>
+            <button onclick="simulateStrangerDevice()" class="btn px-2.5 py-1 text-[11px]">
+              + Simulate Intruder
+            </button>
+          </div>
+          <p class="text-xs m-0 mb-3" style="color: var(--muted);">
+            Click <strong>Block &amp; Disconnect</strong> on any unrecognized device to cut off its internet &amp; DNS access immediately.
+          </p>
+          <div id="devicesList" class="space-y-2.5 max-h-[460px] overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- Apps Table (7 cols) -->
+        <div class="lg:col-span-7 panel p-4">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
             <div>
               <h2 class="text-sm font-semibold m-0">Which Apps Use the Most Data?</h2>
               <p class="text-xs m-0 mt-0.5" style="color: var(--muted);">Ranked from highest to lowest data usage today. Click Pause to block an app house-wide.</p>
             </div>
             <select id="deviceFilter" onchange="renderApps()" class="px-2.5 py-1.5 rounded text-xs" style="background: var(--bg); border: 1px solid var(--border-hi); color: var(--text);">
-              <option value="ALL">All Devices (7)</option>
+              <option value="ALL">All Devices</option>
               <option value="Living Room Apple TV">Living Room Apple TV</option>
               <option value="iPhone 16 Pro">iPhone 16 Pro</option>
               <option value="PlayStation 5">PlayStation 5</option>
               <option value="Alex's MacBook Pro">Alex's MacBook Pro</option>
               <option value="Work Desktop PC">Work Desktop PC</option>
+              <option value="Unknown Android-8F2A">Unknown Android-8F2A</option>
             </select>
           </div>
 
@@ -285,13 +397,6 @@
               <tbody id="appsTableBody"></tbody>
             </table>
           </div>
-        </div>
-
-        <!-- Connected Devices Sidebar (1 col) -->
-        <div class="panel p-4">
-          <h2 class="text-sm font-semibold m-0 mb-1">Devices on Your Wi-Fi</h2>
-          <p class="text-xs m-0 mb-3" style="color: var(--muted);">Click a device to see only its apps</p>
-          <div id="devicesList" class="space-y-2"></div>
         </div>
       </div>
     </div>
@@ -314,14 +419,13 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <!-- Activity List -->
         <div class="lg:col-span-2 panel p-4">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
             <div class="flex items-center gap-1.5 flex-wrap">
               <button onclick="setMsgFilter('ALL')" id="mf-ALL" class="btn-primary px-2.5 py-1 text-xs">All Activity</button>
               <button onclick="setMsgFilter('CHAT')" id="mf-CHAT" class="btn px-2.5 py-1 text-xs">Chat Apps</button>
               <button onclick="setMsgFilter('LOCAL')" id="mf-LOCAL" class="btn px-2.5 py-1 text-xs">Readable Local Messages</button>
-              <button onclick="setMsgFilter('BLOCKED')" id="mf-BLOCKED" class="btn px-2.5 py-1 text-xs">Blocked Ads</button>
+              <button onclick="setMsgFilter('BLOCKED')" id="mf-BLOCKED" class="btn px-2.5 py-1 text-xs">Blocked &amp; Security</button>
             </div>
             <input id="msgSearch" oninput="renderMessages()" type="text" placeholder="Search device or app..." class="px-2.5 py-1 rounded text-xs w-44" style="background: var(--bg); border: 1px solid var(--border-hi); color: var(--text);" />
           </div>
@@ -329,7 +433,6 @@
           <div id="messagesList" class="space-y-2 max-h-[420px] overflow-y-auto pr-1"></div>
         </div>
 
-        <!-- Plain-English Message Inspector + Collapsible Technical Details -->
         <div class="panel p-4 flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between pb-2.5 mb-3 border-b" style="border-color: var(--border);">
@@ -338,7 +441,6 @@
             </div>
             <div id="detailPlain" class="space-y-3 text-xs"></div>
 
-            <!-- Ops Engineer Technical Drawer Toggle -->
             <div class="mt-4 pt-3 border-t" style="border-color: var(--border);">
               <button onclick="toggleTechDetails()" id="techToggleBtn" class="btn w-full py-1.5 text-xs font-medium">
                 Show Technical Details (IP / Headers / Raw Data)
@@ -351,11 +453,10 @@
     </div>
 
     <!-- =================================================================== -->
-    <!-- TAB 3: AD BLOCKER & APP CONTROLS (WHOLE-HOME DNS SINKHOLE)          -->
+    <!-- TAB 3: AD BLOCKER & APP CONTROLS                                    -->
     <!-- =================================================================== -->
     <div id="panel-blocker" class="hidden space-y-4">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <!-- Left 2 Cols: Simple Protection Toggles + Website Tester -->
         <div class="lg:col-span-2 space-y-4">
           <div class="panel p-4">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
@@ -370,9 +471,8 @@
             <div id="shieldsList" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
           </div>
 
-          <!-- Simple Website / App Tester -->
           <div class="panel p-4">
-            <h3 class="text-sm font-semibold m-0 mb-1">Test if a Website or Tracker is Blocked</h3>
+            <h3 class="text-sm font-semibold m-0 mb-1">Test if a Website or Device is Blocked</h3>
             <p class="text-xs m-0 mb-3" style="color: var(--muted);">Type any domain (like <code class="font-mono">ads.roku.com</code> or <code class="font-mono">tiktok.com</code>) to see what happens when a device tries to open it.</p>
 
             <div class="flex flex-wrap items-center gap-2 mb-2.5">
@@ -394,7 +494,6 @@
           </div>
         </div>
 
-        <!-- Right Col: Pause Apps House-Wide + Custom Block -->
         <div class="panel p-4 space-y-4">
           <div>
             <h2 class="text-sm font-semibold m-0 mb-1">Pause Apps Across Whole Home</h2>
@@ -459,17 +558,15 @@
             </div>
           </div>
 
-          <!-- Plain-English Verdict -->
           <div id="stVerdict" class="subpanel p-3 text-xs leading-relaxed">
             <strong style="color: var(--green);">What this means:</strong> Your internet is running at <strong>97% of your 500 Mbps plan</strong>. You can easily stream 4K movies on multiple TVs, hold HD Zoom calls, and play online games with zero lag.
           </div>
         </div>
 
-        <!-- Simple 2-Step Home Setup Card -->
         <div class="panel p-4 flex flex-col justify-between space-y-3">
           <div>
             <h3 class="text-sm font-semibold m-0 mb-1">Connect to Your Real Home Wi-Fi</h3>
-            <p class="text-xs m-0 mb-3" style="color: var(--muted);">Right now you are viewing live simulated home data. To monitor your actual home Wi-Fi:</p>
+            <p class="text-xs m-0 mb-3" style="color: var(--muted);">Right now you are viewing sample demo devices. To scan and block real devices on your actual home Wi-Fi:</p>
 
             <div class="space-y-2.5 text-xs">
               <div class="subpanel p-3">
@@ -478,7 +575,7 @@
               </div>
               <div class="subpanel p-3">
                 <div class="font-semibold mb-1" style="color: var(--amber);">Step 2 — Set Router DNS to that computer's IP</div>
-                <p class="m-0" style="color: var(--muted);">In your router settings (usually 192.168.1.1 → DHCP/DNS), set Primary DNS to the computer running J.A.R.V.I.S. Every phone &amp; TV will appear here automatically.</p>
+                <p class="m-0" style="color: var(--muted);">In your router settings (usually 192.168.1.1 → DHCP/DNS), set Primary DNS to the computer running J.A.R.V.I.S. Any device you click <strong>Block &amp; Disconnect</strong> on will have 100% of its internet lookups cut off.</p>
               </div>
             </div>
           </div>
@@ -507,6 +604,17 @@
     let totalBlocked = 3371;
     let totalRequests = 14890;
 
+    const devices = [
+      { id: 'dev-unk-1', name: 'Unknown Android-8F2A', type: 'Unrecognized Phone', connection: '2.4 GHz Wi-Fi', liveMbps: 14.2, todayGB: 3.4, ip: '192.168.1.74', mac: '7C:B2:7D:8F:2A:19', trusted: false, blocked: false },
+      { id: 'dev-1', name: 'Living Room Apple TV', type: 'Streaming TV', connection: '5 GHz Wi-Fi', liveMbps: 49.2, todayGB: 25.4, ip: '192.168.1.14', mac: 'A4:83:E7:21:9B:04', trusted: true, blocked: false },
+      { id: 'dev-2', name: 'iPhone 16 Pro', type: 'Smartphone', connection: '5 GHz Wi-Fi', liveMbps: 36.7, todayGB: 13.6, ip: '192.168.1.41', mac: 'BC:D0:74:11:5E:8A', trusted: true, blocked: false },
+      { id: 'dev-3', name: "Alex's MacBook Pro", type: 'Laptop', connection: '6 GHz Wi-Fi', liveMbps: 14.8, todayGB: 12.1, ip: '192.168.1.22', mac: 'F8:4D:89:63:10:CC', trusted: true, blocked: false },
+      { id: 'dev-4', name: 'PlayStation 5', type: 'Game Console', connection: 'Wired Cable', liveMbps: 34.5, todayGB: 11.8, ip: '192.168.1.30', mac: '70:9E:29:4F:81:19', trusted: true, blocked: false },
+      { id: 'dev-5', name: 'Work Desktop PC', type: 'Desktop', connection: 'Wired Cable', liveMbps: 12.4, todayGB: 4.8, ip: '192.168.1.55', mac: 'D8:BB:C1:90:02:47', trusted: true, blocked: false },
+      { id: 'dev-6', name: 'Smart Thermostat & Hub', type: 'Smart Home', connection: '2.4 GHz Wi-Fi', liveMbps: 0.4, todayGB: 0.5, ip: '192.168.1.88', mac: 'DC:A6:32:77:43:12', trusted: true, blocked: false },
+      { id: 'dev-7', name: 'Kitchen Sonos Speaker', type: 'Smart Speaker', connection: '5 GHz Wi-Fi', liveMbps: 1.2, todayGB: 0.2, ip: '192.168.1.92', mac: '5C:AA:FD:28:19:01', trusted: true, blocked: false }
+    ];
+
     const apps = [
       { id: 'netflix', name: 'Netflix', activity: '4K Video Streaming', device: 'Living Room Apple TV', liveMbps: 48.4, todayGB: 24.8, lockable: true, domains: ['netflix.com', 'nflxvideo.net'] },
       { id: 'youtube', name: 'YouTube', activity: 'HD Video & Shorts', device: 'iPhone 16 Pro', liveMbps: 26.2, todayGB: 14.4, lockable: true, domains: ['youtube.com', 'googlevideo.com'] },
@@ -514,11 +622,12 @@
       { id: 'discord', name: 'Discord', activity: 'Voice Chat & Messages', device: "Alex's MacBook Pro", liveMbps: 6.8, todayGB: 4.9, lockable: true, domains: ['discord.com', 'discord.gg'] },
       { id: 'zoom', name: 'Zoom', activity: 'HD Video Meeting', device: 'Work Desktop PC', liveMbps: 11.5, todayGB: 4.5, lockable: false, domains: ['zoom.us'] },
       { id: 'icloud', name: 'Apple iCloud', activity: 'Automatic Photo Backup', device: 'iPhone 16 Pro', liveMbps: 8.1, todayGB: 3.9, lockable: false, domains: ['icloud.com'] },
+      { id: 'unk-dl', name: 'BitTorrent / Heavy Download', activity: 'High-Bandwidth File Transfer', device: 'Unknown Android-8F2A', liveMbps: 14.2, todayGB: 3.4, lockable: true, domains: ['bittorrent.com'] },
       { id: 'whatsapp', name: 'WhatsApp', activity: 'Chats & Photo Uploads', device: 'iPhone 16 Pro', liveMbps: 2.4, todayGB: 2.2, lockable: false, domains: ['whatsapp.net'] },
       { id: 'tiktok', name: 'TikTok', activity: 'Short Video Feed', device: 'iPhone 16 Pro', liveMbps: 4.2, todayGB: 1.8, lockable: true, domains: ['tiktok.com', 'tiktokv.com'] }
     ];
 
-    const appLocks = { netflix: false, youtube: false, steam: false, discord: false, tiktok: false };
+    const appLocks = { netflix: false, youtube: false, steam: false, discord: false, tiktok: false, 'unk-dl': false };
 
     const shields = [
       { id: 'ads', name: 'Block Ads & Mobile Trackers', desc: 'Stops ad banners, popups, and app tracking SDKs across all phones & browsers.', enabled: true, count: 1842, patterns: ['doubleclick.net', 'googleadservices.com', 'app-measurement.com', 'pixel.facebook.com'] },
@@ -529,20 +638,22 @@
 
     let customBlocks = ['ads.roku.com', 'doubleclick.net', 'pixel.facebook.com'];
 
-    const devices = [
-      { name: 'Living Room Apple TV', type: 'Streaming TV', connection: '5 GHz Wi-Fi', liveMbps: 49.2, todayGB: 25.4, adsBlocked: 1140, ip: '192.168.1.14' },
-      { name: 'iPhone 16 Pro', type: 'Smartphone', connection: '5 GHz Wi-Fi', liveMbps: 36.7, todayGB: 13.6, adsBlocked: 980, ip: '192.168.1.41' },
-      { name: "Alex's MacBook Pro", type: 'Laptop', connection: '6 GHz Wi-Fi', liveMbps: 14.8, todayGB: 12.1, adsBlocked: 620, ip: '192.168.1.22' },
-      { name: 'PlayStation 5', type: 'Game Console', connection: 'Wired Cable', liveMbps: 34.5, todayGB: 11.8, adsBlocked: 95, ip: '192.168.1.30' },
-      { name: 'Work Desktop PC', type: 'Desktop', connection: 'Wired Cable', liveMbps: 12.4, todayGB: 4.8, adsBlocked: 442, ip: '192.168.1.55' },
-      { name: 'Smart Thermostat & Hub', type: 'Smart Home', connection: '2.4 GHz Wi-Fi', liveMbps: 0.4, todayGB: 0.5, adsBlocked: 14, ip: '192.168.1.88' },
-      { name: 'Kitchen Sonos Speaker', type: 'Smart Speaker', connection: '5 GHz Wi-Fi', liveMbps: 1.2, todayGB: 0.2, adsBlocked: 80, ip: '192.168.1.92' }
-    ];
-
     const messages = [
       {
-        id: 1,
+        id: 100,
         time: 'Just now',
+        device: 'Unknown Android-8F2A',
+        app: 'Security Alert',
+        category: 'BLOCKED',
+        readable: true,
+        headline: 'Unrecognized device joined Wi-Fi (IP 192.168.1.74 · MAC 7C:B2:7D:8F:2A:19)',
+        explanation: 'This device is not on your trusted home device list and is currently downloading data at 14.2 Mbps. Click "Block & Disconnect" in the Devices list to cut it off.',
+        rawIp: 'DHCP Lease 192.168.1.74 → MAC 7C:B2:7D:8F:2A:19',
+        rawPayload: 'ARP Broadcast: Who has 192.168.1.1? Tell 192.168.1.74 (7C:B2:7D:8F:2A:19)\nHostname: Android-8F2A'
+      },
+      {
+        id: 1,
+        time: '20 sec ago',
         device: 'Smart Thermostat & Hub',
         app: 'Smart Home Update',
         category: 'LOCAL',
@@ -554,7 +665,7 @@
       },
       {
         id: 2,
-        time: '12 sec ago',
+        time: '35 sec ago',
         device: 'iPhone 16 Pro',
         app: 'WhatsApp',
         category: 'CHAT',
@@ -566,7 +677,7 @@
       },
       {
         id: 3,
-        time: '28 sec ago',
+        time: '1 min ago',
         device: 'Living Room Apple TV',
         app: 'Ad Blocker',
         category: 'BLOCKED',
@@ -575,30 +686,6 @@
         explanation: 'Your Apple TV / Smart TV tried to reach a known advertising server. J.A.R.V.I.S. blocked it automatically before it could load.',
         rawIp: '192.168.1.14 → Gateway DNS :53 (Blocked → 0.0.0.0)',
         rawPayload: 'DNS Query: ads.roku.com (Type A)\nRule: Block Smart TV Spying & Ads\nResponse: 0.0.0.0 (Blocked in 0.1 ms)'
-      },
-      {
-        id: 4,
-        time: '45 sec ago',
-        device: "Alex's MacBook Pro",
-        app: 'Discord',
-        category: 'CHAT',
-        readable: false,
-        headline: 'Sent text chat messages in Discord (1.4 KB)',
-        explanation: 'Discord encrypts message text over TLS. J.A.R.V.I.S. confirms active text messaging from Alex\'s MacBook Pro.',
-        rawIp: '192.168.1.22:54192 → 162.159.135.234:443 (WSS / TLS 1.3)',
-        rawPayload: 'SNI: gateway.discord.gg\nInteractive burst: 1,412 bytes sent'
-      },
-      {
-        id: 5,
-        time: '1 min ago',
-        device: 'Living Room Apple TV',
-        app: 'AirPlay / Local Broadcast',
-        category: 'LOCAL',
-        readable: true,
-        headline: 'Announced status on Wi-Fi: "Now Playing Netflix"',
-        explanation: 'Apple devices broadcast local discovery announcements on your home Wi-Fi so phones can find them for AirPlay.',
-        rawIp: '192.168.1.14:5353 → 224.0.0.251:5353 (mDNS)',
-        rawPayload: 'Service: _airplay._tcp.local\nModel: AppleTV14,1\nStatus: Active Video Playback'
       }
     ];
 
@@ -635,6 +722,198 @@
       document.getElementById('pauseBtn').textContent = liveRunning ? 'Pause Live Feed' : 'Resume Live Feed';
     }
 
+    // --- BLOCK / DISCONNECT / TRUST DEVICE LOGIC ---
+    function toggleBlockDevice(devId, ev) {
+      if (ev) ev.stopPropagation();
+      const d = devices.find(x => x.id === devId);
+      if (!d) return;
+      d.blocked = !d.blocked;
+      if (d.blocked) {
+        d.liveMbps = 0;
+        const newId = Date.now();
+        messages.unshift({
+          id: newId,
+          time: 'Just now',
+          device: d.name,
+          app: 'Device Quarantined',
+          category: 'BLOCKED',
+          readable: true,
+          headline: `Blocked & disconnected ${d.name} (${d.ip} · MAC ${d.mac})`,
+          explanation: 'All internet traffic and DNS lookups from this device are now cut off (sinkholed to 0.0.0.0).',
+          rawIp: `${d.ip} (${d.mac}) → QUARANTINED`,
+          rawPayload: `Action: DEVICE_QUARANTINE\nTarget IP: ${d.ip}\nTarget MAC: ${d.mac}\nDNS Policy: 100% NXDOMAIN / 0.0.0.0`
+        });
+        selectedMsgId = newId;
+        document.getElementById('kpiLastEvent').textContent = `Blocked ${d.name}`;
+      } else {
+        d.liveMbps = 4.5;
+        document.getElementById('kpiLastEvent').textContent = `Unblocked ${d.name}`;
+      }
+      // Also notify local backend if running
+      fetch('/api/devices/quarantine', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ip: d.ip })
+      }).catch(() => {});
+
+      updateSecurityBanner();
+      renderDevices();
+      renderApps();
+      renderMessages();
+    }
+
+    function trustDevice(devId, ev) {
+      if (ev) ev.stopPropagation();
+      const d = devices.find(x => x.id === devId);
+      if (!d) return;
+      d.trusted = true;
+      d.blocked = false;
+      updateSecurityBanner();
+      renderDevices();
+    }
+
+    function blockAllUnknownDevices() {
+      devices.forEach(d => {
+        if (!d.trusted && !d.blocked) {
+          d.blocked = true;
+          d.liveMbps = 0;
+        }
+      });
+      const newId = Date.now();
+      messages.unshift({
+        id: newId,
+        time: 'Just now',
+        device: 'Security Shield',
+        app: 'Auto-Quarantine',
+        category: 'BLOCKED',
+        readable: true,
+        headline: 'Blocked & disconnected all unrecognized devices on Wi-Fi',
+        explanation: 'Every unverified device on your network has been cut off from internet and DNS access.',
+        rawIp: 'Subnet 192.168.1.0/24 → Unknown MACs Quarantined',
+        rawPayload: 'Policy: BLOCK_ALL_UNTRUSTED_HOSTS -> ACTIVE'
+      });
+      selectedMsgId = newId;
+      document.getElementById('kpiLastEvent').textContent = 'Blocked all unknown devices';
+      updateSecurityBanner();
+      renderDevices();
+      renderApps();
+      renderMessages();
+    }
+
+    function simulateStrangerDevice() {
+      const randHex = () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0').toUpperCase();
+      const suffix = randHex() + randHex();
+      const ipLast = Math.floor(Math.random() * 140) + 100;
+      const mac = `B8:27:EB:${randHex()}:${randHex()}:${randHex()}`;
+      const name = `Unknown-Device-${suffix}`;
+      const newDev = {
+        id: 'dev-' + Date.now(),
+        name,
+        type: 'Unrecognized Device',
+        connection: '2.4 GHz Wi-Fi',
+        liveMbps: 9.8,
+        todayGB: 0.6,
+        ip: `192.168.1.${ipLast}`,
+        mac,
+        trusted: false,
+        blocked: false
+      };
+      devices.unshift(newDev);
+      updateSecurityBanner();
+      renderDevices();
+    }
+
+    function copyMacAddress(mac, ev) {
+      if (ev) ev.stopPropagation();
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(mac).catch(() => {});
+      }
+      const btn = ev?.currentTarget;
+      if (btn) {
+        const prev = btn.textContent;
+        btn.textContent = '✓ MAC Copied';
+        setTimeout(() => { btn.textContent = prev; }, 1600);
+      }
+    }
+
+    function updateSecurityBanner() {
+      const activeUnknowns = devices.filter(d => !d.trusted && !d.blocked);
+      const blockedDevices = devices.filter(d => d.blocked);
+      const banner = document.getElementById('unknownAlertBanner');
+      const kpiQ = document.getElementById('kpiQuarantineCount');
+      document.getElementById('kpiOnlineDevices').textContent = devices.length;
+
+      if (activeUnknowns.length > 0) {
+        banner.classList.remove('hidden');
+        const names = activeUnknowns.map(d => `${d.name} (${d.ip})`).join(', ');
+        document.getElementById('unknownAlertTitle').textContent =
+          `${activeUnknowns.length} unrecognized device${activeUnknowns.length > 1 ? 's' : ''} on your Wi-Fi: ${names}`;
+        kpiQ.textContent = `${activeUnknowns.length} Unknown`;
+        kpiQ.style.color = 'var(--amber)';
+      } else {
+        banner.classList.add('hidden');
+        if (blockedDevices.length > 0) {
+          kpiQ.textContent = `${blockedDevices.length} Blocked`;
+          kpiQ.style.color = 'var(--red)';
+        } else {
+          kpiQ.textContent = 'All Trusted';
+          kpiQ.style.color = 'var(--green)';
+        }
+      }
+    }
+
+    function renderDevices() {
+      document.getElementById('devicesList').innerHTML = devices.map(d => {
+        let badgeHtml = `<span class="px-1.5 py-0.5 rounded text-[10px] font-medium" style="background: var(--green-bg); color: var(--green);">Trusted</span>`;
+        let cardBorder = '';
+        if (d.blocked) {
+          badgeHtml = `<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold" style="background: var(--red-bg); color: #f3b8b8;">🚫 Blocked &amp; Disconnected</span>`;
+          cardBorder = 'border-color: rgba(196, 92, 92, 0.55); background: rgba(196, 92, 92, 0.07);';
+        } else if (!d.trusted) {
+          badgeHtml = `<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold" style="background: var(--amber-bg); color: var(--amber);">⚠ Unrecognized</span>`;
+          cardBorder = 'border-color: rgba(204, 148, 68, 0.55); background: rgba(204, 148, 68, 0.08);';
+        }
+
+        return `
+          <div onclick="filterDevice('${d.name.replace(/'/g, "\\'")}')" class="subpanel p-3 cursor-pointer transition hover:border-[var(--cyan)]" style="${cardBorder}">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-xs font-semibold">${d.name}</span>
+                  ${badgeHtml}
+                </div>
+                <div class="text-[11px] mt-0.5" style="color: var(--muted);">
+                  ${d.type} · ${d.connection} · <span class="font-mono">${d.ip}</span>
+                </div>
+                <div class="text-[11px] font-mono mt-0.5" style="color: var(--muted);">
+                  MAC: ${d.mac}
+                </div>
+              </div>
+              <div class="text-right shrink-0">
+                <div class="text-xs font-semibold tabular-nums" style="color: ${d.blocked ? 'var(--red)' : 'var(--cyan)'};">
+                  ${d.blocked ? '0.0 Mbps (Cut Off)' : d.liveMbps.toFixed(1) + ' Mbps'}
+                </div>
+                <div class="text-[11px]" style="color: var(--muted);">${d.todayGB.toFixed(1)} GB today</div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-1.5 mt-2.5 pt-2 border-t" style="border-color: rgba(88,148,178,0.14);">
+              <button onclick="copyMacAddress('${d.mac}', event)" class="btn px-2 py-1 text-[11px]" title="Copy hardware MAC address to block in your router settings">
+                Copy MAC
+              </button>
+              ${!d.trusted && !d.blocked
+                ? `<button onclick="trustDevice('${d.id}', event)" class="btn px-2.5 py-1 text-[11px]" style="color: var(--green); border-color: rgba(69,163,130,0.4);">Mark Trusted</button>`
+                : ''
+              }
+              <button onclick="toggleBlockDevice('${d.id}', event)" class="${d.blocked ? 'btn' : 'btn-danger'} px-2.5 py-1 text-[11px] font-medium">
+                ${d.blocked ? 'Restore Access' : '🚫 Block & Disconnect'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
     function renderApps() {
       const devFilter = document.getElementById('deviceFilter').value;
       const filtered = apps
@@ -642,13 +921,18 @@
         .sort((a, b) => b.todayGB - a.todayGB);
 
       document.getElementById('appsTableBody').innerHTML = filtered.map(a => {
-        const paused = !!appLocks[a.id];
+        const hostDev = devices.find(d => d.name === a.device);
+        const devBlocked = hostDev && hostDev.blocked;
+        const paused = !!appLocks[a.id] || devBlocked;
         return `
           <tr style="border-bottom: 1px solid rgba(88,148,178,0.14);" class="hover:bg-[rgba(84,168,199,0.06)]">
             <td class="py-2.5 pr-3">
               <div class="font-semibold flex items-center gap-2">
                 <span>${a.name}</span>
-                ${paused ? '<span class="px-1.5 py-0.5 rounded text-[11px]" style="background:var(--red-bg); color:#e69090;">Paused</span>' : ''}
+                ${devBlocked
+                  ? '<span class="px-1.5 py-0.5 rounded text-[10px]" style="background:var(--red-bg); color:#f3b8b8;">Device Blocked</span>'
+                  : (paused ? '<span class="px-1.5 py-0.5 rounded text-[10px]" style="background:var(--red-bg); color:#f3b8b8;">Paused</span>' : '')
+                }
               </div>
               <div class="text-[11px]" style="color: var(--muted);">${a.activity}</div>
             </td>
@@ -660,27 +944,12 @@
             <td class="py-2.5 pl-3 text-right">
               ${a.lockable
                 ? `<button onclick="toggleAppLock('${a.id}')" class="btn px-2.5 py-1 text-[11px]" style="${paused ? 'background:var(--red-bg); border-color:var(--red); color:#f0b4b4;' : ''}">${paused ? 'Unpause' : 'Pause App'}</button>`
-                : `<span class="text-[11px]" style="color: var(--muted);">Active</span>`
+                : `<span class="text-[11px]" style="color: var(--muted);">${devBlocked ? 'Cut Off' : 'Active'}</span>`
               }
             </td>
           </tr>
         `;
       }).join('');
-    }
-
-    function renderDevices() {
-      document.getElementById('devicesList').innerHTML = devices.map(d => `
-        <div onclick="filterDevice('${d.name.replace(/'/g, "\\'")}')" class="subpanel p-2.5 hover:border-[var(--cyan)] cursor-pointer transition flex items-center justify-between gap-2">
-          <div>
-            <div class="text-xs font-semibold">${d.name}</div>
-            <div class="text-[11px]" style="color: var(--muted);">${d.type} · ${d.connection}</div>
-          </div>
-          <div class="text-right">
-            <div class="text-xs font-semibold tabular-nums" style="color: var(--cyan);">${d.liveMbps.toFixed(1)} Mbps</div>
-            <div class="text-[11px]" style="color: var(--muted);">${d.todayGB.toFixed(1)} GB today</div>
-          </div>
-        </div>
-      `).join('');
     }
 
     function filterDevice(name) {
@@ -734,7 +1003,7 @@
       const m = messages.find(x => x.id === selectedMsgId) || messages[0];
       if (!m) return;
       const badge = document.getElementById('detailBadge');
-      badge.textContent = m.category === 'BLOCKED' ? 'Blocked Automatically' : (m.readable ? 'Readable Local Message' : 'Encrypted Chat Activity');
+      badge.textContent = m.category === 'BLOCKED' ? 'Security / Blocked' : (m.readable ? 'Readable Local Message' : 'Encrypted Chat Activity');
       badge.style.background = m.category === 'BLOCKED' ? 'var(--amber-bg)' : (m.readable ? 'var(--green-bg)' : 'var(--cyan-bg)');
       badge.style.color = m.category === 'BLOCKED' ? 'var(--amber)' : (m.readable ? 'var(--green)' : 'var(--cyan)');
 
@@ -1015,15 +1284,149 @@
       line(upSeries, '#45a382', 0.14);
     }
 
+    // --- LIVE HOME AGENT CONNECTOR ---
+    window.EMBEDDED_WIN_AGENT_B64 = "PCMKICBKLkEuUi5WLkkuUy4gLy8gTmV0UHVsc2UgTGl2ZSBIb21lIFdpLUZpIEFnZW50IChOYXRpdmUgV2luZG93cyBQb3dlclNoZWxsIEVkaXRpb24pCiAgV29ya3Mgb24gV2luZG93cyAxMCAvIDExIHdpdGggWkVSTyBleHRyYSBpbnN0YWxscyAobm8gUHl0aG9uIHJlcXVpcmVkKS4KCiAgUnVuIGluIFdpbmRvd3MgUG93ZXJTaGVsbDoKICAgIHBvd2Vyc2hlbGwgLUV4ZWN1dGlvblBvbGljeSBCeXBhc3MgLUZpbGUgLlxqYXJ2aXNfaG9tZV9hZ2VudC5wczEKIz4KCiRQb3J0ID0gODA4MAokRXJyb3JBY3Rpb25QcmVmZXJlbmNlID0gIlNpbGVudGx5Q29udGludWUiCgpXcml0ZS1Ib3N0ICI9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0iIC1Gb3JlZ3JvdW5kQ29sb3IgQ3lhbgpXcml0ZS1Ib3N0ICIgSi5BLlIuVi5JLlMuIC8vIE5BVElWRSBXSU5ET1dTIEhPTUUgV0ktRkkgQUdFTlQgU1RBUlRJTkcuLi4iIC1Gb3JlZ3JvdW5kQ29sb3IgQ3lhbgpXcml0ZS1Ib3N0ICI9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0iIC1Gb3JlZ3JvdW5kQ29sb3IgQ3lhbgoKIyBDb21tb24gTUFDIE9VSSBWZW5kb3IgTG9va3VwCiRPdWlWZW5kb3JzID0gQHsKICAgICJBNDo4MzpFNyIgPSBAKCJBcHBsZSBEZXZpY2UiLCAiQXBwbGUiKQogICAgIkJDOkQwOjc0IiA9IEAoIkFwcGxlIGlQaG9uZSAvIGlQYWQiLCAiQXBwbGUiKQogICAgIkY4OjREOjg5IiA9IEAoIkFwcGxlIE1hY0Jvb2siLCAiQXBwbGUiKQogICAgIjAwOjE3OkYyIiA9IEAoIkFwcGxlIERldmljZSIsICJBcHBsZSIpCiAgICAiM0M6MjI6RkIiID0gQCgiQXBwbGUgRGV2aWNlIiwgIkFwcGxlIikKICAgICJEODpCQjpDMSIgPSBAKCJEZXNrdG9wIC8gUEMiLCAiSW50ZWwiKQogICAgIkRDOkE2OjMyIiA9IEAoIlJhc3BiZXJyeSBQaSAvIFNtYXJ0IEh1YiIsICJSYXNwYmVycnkgUGkiKQogICAgIkI4OjI3OkVCIiA9IEAoIlJhc3BiZXJyeSBQaSAvIElvVCIsICJSYXNwYmVycnkgUGkiKQogICAgIjcwOjlFOjI5IiA9IEAoIlBsYXlTdGF0aW9uIENvbnNvbGUiLCAiU29ueSIpCiAgICAiNUM6QUE6RkQiID0gQCgiU29ub3MgU21hcnQgU3BlYWtlciIsICJTb25vcyIpCiAgICAiRjA6OUY6QzIiID0gQCgiVW5pRmkgLyBOZXR3b3JrIEdlYXIiLCAiVWJpcXVpdGkiKQogICAgIjQ0OjY1OjBEIiA9IEAoIkFtYXpvbiBFY2hvIC8gRmlyZVRWIiwgIkFtYXpvbiIpCiAgICAiQjA6RkM6MzYiID0gQCgiUm9rdSBTbWFydCBUViIsICJSb2t1IikKICAgICI4Qzo3OTpGNSIgPSBAKCJTYW1zdW5nIEdhbGF4eSAvIFNtYXJ0IFRWIiwgIlNhbXN1bmciKQogICAgIjI0OkY1OkFBIiA9IEAoIlNhbXN1bmcgRGV2aWNlIiwgIlNhbXN1bmciKQogICAgIjMwOkZEOjM4IiA9IEAoIkdvb2dsZSBOZXN0IC8gQ2hyb21lY2FzdCIsICJHb29nbGUiKQogICAgIjUwOkM3OkJGIiA9IEAoIlRQLUxpbmsgU21hcnQgUGx1ZyAvIFJvdXRlciIsICJUUC1MaW5rIikKfQoKZnVuY3Rpb24gR2V0LUxvY2FsSXBBbmRTdWJuZXQgewogICAgdHJ5IHsKICAgICAgICAkdWRwID0gTmV3LU9iamVjdCBTeXN0ZW0uTmV0LlNvY2tldHMuVWRwQ2xpZW50CiAgICAgICAgJHVkcC5Db25uZWN0KCIxLjEuMS4xIiwgODApCiAgICAgICAgJGlwID0gJHVkcC5DbGllbnQuTG9jYWxFbmRQb2ludC5BZGRyZXNzLklQQWRkcmVzc1RvU3RyaW5nCiAgICAgICAgJHVkcC5DbG9zZSgpCiAgICAgICAgJHBhcnRzID0gJGlwLlNwbGl0KCIuIikKICAgICAgICBpZiAoJHBhcnRzLkxlbmd0aCAtZXEgNCkgewogICAgICAgICAgICByZXR1cm4gQHsgSXAgPSAkaXA7IFByZWZpeCA9ICIkKCRwYXJ0c1swXSkuJCgkcGFydHNbMV0pLiQoJHBhcnRzWzJdKSIgfQogICAgICAgIH0KICAgIH0gY2F0Y2gge30KICAgIHJldHVybiBAeyBJcCA9ICIxMjcuMC4wLjEiOyBQcmVmaXggPSAiMTkyLjE2OC4xIiB9Cn0KCmZ1bmN0aW9uIEdldC1Ub3RhbE5ldEJ5dGVzIHsKICAgICRyeCA9IFtkb3VibGVdMAogICAgJHR4ID0gW2RvdWJsZV0wCiAgICB0cnkgewogICAgICAgICRzdGF0cyA9IEdldC1OZXRBZGFwdGVyU3RhdGlzdGljcwogICAgICAgIGZvcmVhY2ggKCRzIGluICRzdGF0cykgewogICAgICAgICAgICAkcnggKz0gW2RvdWJsZV0kcy5SZWNlaXZlZEJ5dGVzCiAgICAgICAgICAgICR0eCArPSBbZG91YmxlXSRzLlNlbnRCeXRlcwogICAgICAgIH0KICAgIH0gY2F0Y2gge30KICAgIHJldHVybiBAeyBSeCA9ICRyeDsgVHggPSAkdHggfQp9CgokUXVhcmFudGluZWRJcHMgPSBOZXctT2JqZWN0IFN5c3RlbS5Db2xsZWN0aW9ucy5HZW5lcmljLkhhc2hTZXRbc3RyaW5nXQokVHJ1c3RlZElwcyA9IE5ldy1PYmplY3QgU3lzdGVtLkNvbGxlY3Rpb25zLkdlbmVyaWMuSGFzaFNldFtzdHJpbmddCgpmdW5jdGlvbiBTY2FuLUhvbWVEZXZpY2VzIHsKICAgIHBhcmFtKFtzdHJpbmddJFN1Ym5ldFByZWZpeCwgW3N0cmluZ10kTG9jYWxJcCkKCiAgICAjIFF1aWNrIG5vbi1ibG9ja2luZyBVRFAgbnVkZ2UgYWNyb3NzIC4xLS4yNTQgdG8gcmVmcmVzaCBBUlAgY2FjaGUKICAgIHRyeSB7CiAgICAgICAgJHVkcCA9IE5ldy1PYmplY3QgU3lzdGVtLk5ldC5Tb2NrZXRzLlVkcENsaWVudAogICAgICAgICRieXRlcyA9IFtieXRlW11dQCgwKQogICAgICAgIGZvciAoJGkgPSAxOyAkaSAtbGUgMjU0OyAkaSsrKSB7CiAgICAgICAgICAgICR0YXJnZXQgPSAiJFN1Ym5ldFByZWZpeC4kaSIKICAgICAgICAgICAgaWYgKCR0YXJnZXQgLW5lICRMb2NhbElwKSB7CiAgICAgICAgICAgICAgICB0cnkgeyBbdm9pZF0kdWRwLlNlbmQoJGJ5dGVzLCAxLCAkdGFyZ2V0LCAxOTAwKSB9IGNhdGNoIHt9CiAgICAgICAgICAgIH0KICAgICAgICB9CiAgICAgICAgJHVkcC5DbG9zZSgpCiAgICB9IGNhdGNoIHt9CiAgICBTdGFydC1TbGVlcCAtTWlsbGlzZWNvbmRzIDI1MAoKICAgICRmb3VuZCA9IEB7fQogICAgJGFycExpbmVzID0gYXJwIC1hCiAgICBmb3JlYWNoICgkbGluZSBpbiAkYXJwTGluZXMpIHsKICAgICAgICBpZiAoJGxpbmUgLW1hdGNoICcoXGQrXC5cZCtcLlxkK1wuXGQrKVxzKyhbMC05YS1mQS1GXXsyfSg/Oi1bMC05YS1mQS1GXXsyfSl7NX0pJykgewogICAgICAgICAgICAkaXAgPSAkTWF0Y2hlc1sxXQogICAgICAgICAgICAkbWFjID0gJE1hdGNoZXNbMl0uUmVwbGFjZSgiLSIsICI6IikuVG9VcHBlcigpCiAgICAgICAgICAgIGlmICgkaXAuU3RhcnRzV2l0aCgiJFN1Ym5ldFByZWZpeC4iKSAtYW5kICRtYWMgLW5lICJGRjpGRjpGRjpGRjpGRjpGRiIgLWFuZCAkbWFjIC1uZSAiMDA6MDA6MDA6MDA6MDA6MDAiIC1hbmQgLW5vdCAkaXAuRW5kc1dpdGgoIi4yNTUiKSkgewogICAgICAgICAgICAgICAgJGZvdW5kWyRpcF0gPSAkbWFjCiAgICAgICAgICAgIH0KICAgICAgICB9CiAgICB9CgogICAgJGxpc3QgPSBOZXctT2JqZWN0IFN5c3RlbS5Db2xsZWN0aW9ucy5BcnJheUxpc3QKICAgIFt2b2lkXSRsaXN0LkFkZChAewogICAgICAgIGlkID0gImhvc3Qtc2VsZiIKICAgICAgICBuYW1lID0gIiQoJGVudjpDT01QVVRFUk5BTUUpIChUaGlzIFdpbmRvd3MgUEMpIgogICAgICAgIHR5cGUgPSAiV2luZG93cyBIb3N0IgogICAgICAgIGNvbm5lY3Rpb24gPSAiTG9jYWwgV2ktRmkgLyBMQU4iCiAgICAgICAgaXAgPSAkTG9jYWxJcAogICAgICAgIG1hYyA9ICJMT0NBTC1IT1NUIgogICAgICAgIHRydXN0ZWQgPSAkdHJ1ZQogICAgICAgIGJsb2NrZWQgPSAkZmFsc2UKICAgICAgICBsaXZlTWJwcyA9IDAuMAogICAgICAgIHRvZGF5R0IgPSAwLjQKICAgIH0pCgogICAgZm9yZWFjaCAoJGlwIGluICgkZm91bmQuS2V5cyB8IFNvcnQtT2JqZWN0KSkgewogICAgICAgIGlmICgkaXAgLWVxICRMb2NhbElwKSB7IGNvbnRpbnVlIH0KICAgICAgICAkbWFjID0gJGZvdW5kWyRpcF0KICAgICAgICAkcHJlZml4ID0gJG1hYy5TdWJzdHJpbmcoMCwgOCkKICAgICAgICAkaXNSb3V0ZXIgPSAkaXAuRW5kc1dpdGgoIi4xIikgLW9yICRpcC5FbmRzV2l0aCgiLjI1NCIpCgogICAgICAgICRob3N0TmFtZSA9ICIiCiAgICAgICAgdHJ5IHsKICAgICAgICAgICAgJHRhc2sgPSBbU3lzdGVtLk5ldC5EbnNdOjpHZXRIb3N0RW50cnlBc3luYygkaXApCiAgICAgICAgICAgIGlmICgkdGFzay5XYWl0KDE1MCkpIHsKICAgICAgICAgICAgICAgICRob3N0TmFtZSA9ICR0YXNrLlJlc3VsdC5Ib3N0TmFtZS5TcGxpdCgiLiIpWzBdCiAgICAgICAgICAgIH0KICAgICAgICB9IGNhdGNoIHt9CgogICAgICAgIGlmICgkaXNSb3V0ZXIpIHsKICAgICAgICAgICAgJG5hbWUgPSAiSG9tZSBXaS1GaSBSb3V0ZXIgKCRpcCkiCiAgICAgICAgICAgICRkZXZUeXBlID0gIkdhdGV3YXkgUm91dGVyIgogICAgICAgICAgICAkdHJ1c3RlZCA9ICR0cnVlCiAgICAgICAgfSBlbHNlaWYgKCRob3N0TmFtZSAtYW5kICRob3N0TmFtZSAtbmUgJGlwKSB7CiAgICAgICAgICAgICRuYW1lID0gJGhvc3ROYW1lCiAgICAgICAgICAgIGlmICgkT3VpVmVuZG9ycy5Db250YWluc0tleSgkcHJlZml4KSkgewogICAgICAgICAgICAgICAgJGRldlR5cGUgPSAiJCgkT3VpVmVuZG9yc1skcHJlZml4XVsxXSkgKCQoJE91aVZlbmRvcnNbJHByZWZpeF1bMF0pKSIKICAgICAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgICAgICRkZXZUeXBlID0gIldpLUZpIERldmljZSIKICAgICAgICAgICAgfQogICAgICAgICAgICAkdHJ1c3RlZCA9ICR0cnVlCiAgICAgICAgfSBlbHNlaWYgKCRPdWlWZW5kb3JzLkNvbnRhaW5zS2V5KCRwcmVmaXgpKSB7CiAgICAgICAgICAgICRsYXN0T2N0ZXQgPSAkaXAuU3BsaXQoIi4iKVstMV0KICAgICAgICAgICAgJG5hbWUgPSAiJCgkT3VpVmVuZG9yc1skcHJlZml4XVswXSkgKC4kbGFzdE9jdGV0KSIKICAgICAgICAgICAgJGRldlR5cGUgPSAkT3VpVmVuZG9yc1skcHJlZml4XVsxXQogICAgICAgICAgICAkdHJ1c3RlZCA9ICR0cnVlCiAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgJHNob3J0TWFjID0gJG1hYy5TdWJzdHJpbmcoJG1hYy5MZW5ndGggLSA1KS5SZXBsYWNlKCI6IiwgIiIpCiAgICAgICAgICAgICRuYW1lID0gIlVua25vd24gRGV2aWNlLSRzaG9ydE1hYyIKICAgICAgICAgICAgJGRldlR5cGUgPSAiVW5yZWNvZ25pemVkIE1BQyIKICAgICAgICAgICAgJHRydXN0ZWQgPSAkZmFsc2UKICAgICAgICB9CgogICAgICAgIGlmICgkVHJ1c3RlZElwcy5Db250YWlucygkaXApKSB7ICR0cnVzdGVkID0gJHRydWUgfQogICAgICAgICRibG9ja2VkID0gJFF1YXJhbnRpbmVkSXBzLkNvbnRhaW5zKCRpcCkKCiAgICAgICAgW3ZvaWRdJGxpc3QuQWRkKEB7CiAgICAgICAgICAgIGlkID0gImRldi0iICsgJGlwLlJlcGxhY2UoIi4iLCAiLSIpCiAgICAgICAgICAgIG5hbWUgPSAkbmFtZQogICAgICAgICAgICB0eXBlID0gJGRldlR5cGUKICAgICAgICAgICAgY29ubmVjdGlvbiA9ICJIb21lIFdpLUZpIC8gTEFOIgogICAgICAgICAgICBpcCA9ICRpcAogICAgICAgICAgICBtYWMgPSAkbWFjCiAgICAgICAgICAgIHRydXN0ZWQgPSAkdHJ1c3RlZAogICAgICAgICAgICBibG9ja2VkID0gJGJsb2NrZWQKICAgICAgICAgICAgbGl2ZU1icHMgPSAwLjAKICAgICAgICAgICAgdG9kYXlHQiA9IDAuMQogICAgICAgIH0pCiAgICB9CgogICAgcmV0dXJuICwkbGlzdAp9CgokbmV0SW5mbyA9IEdldC1Mb2NhbElwQW5kU3VibmV0CiRMb2NhbElwID0gJG5ldEluZm8uSXAKJFN1Ym5ldFByZWZpeCA9ICRuZXRJbmZvLlByZWZpeApbdm9pZF0kVHJ1c3RlZElwcy5BZGQoJExvY2FsSXApClt2b2lkXSRUcnVzdGVkSXBzLkFkZCgiJFN1Ym5ldFByZWZpeC4xIikKCiREZXZpY2VzID0gU2Nhbi1Ib21lRGV2aWNlcyAtU3VibmV0UHJlZml4ICRTdWJuZXRQcmVmaXggLUxvY2FsSXAgJExvY2FsSXAKJExhc3RCeXRlcyA9IEdldC1Ub3RhbE5ldEJ5dGVzCiRMYXN0VGltZSA9IEdldC1EYXRlCiRMYXN0QXJwU2NhbiA9IEdldC1EYXRlCiREb3duU2VyaWVzID0gTmV3LU9iamVjdCBTeXN0ZW0uQ29sbGVjdGlvbnMuQXJyYXlMaXN0CiRVcFNlcmllcyA9IE5ldy1PYmplY3QgU3lzdGVtLkNvbGxlY3Rpb25zLkFycmF5TGlzdApmb3IgKCRpID0gMDsgJGkgLWx0IDYwOyAkaSsrKSB7IFt2b2lkXSREb3duU2VyaWVzLkFkZCgwLjApOyBbdm9pZF0kVXBTZXJpZXMuQWRkKDAuMCkgfQokUGVha0Rvd24gPSAwLjAKCldyaXRlLUhvc3QgIiBbK10gRGV0ZWN0ZWQgTG9jYWwgSVAgICAgIDogJExvY2FsSXAiIC1Gb3JlZ3JvdW5kQ29sb3IgR3JlZW4KV3JpdGUtSG9zdCAiIFsrXSBTY2FubmluZyBIb21lIFN1Ym5ldCAgOiAkU3VibmV0UHJlZml4LjAvMjQiIC1Gb3JlZ3JvdW5kQ29sb3IgR3JlZW4KV3JpdGUtSG9zdCAiIFsrXSBEaXNjb3ZlcmVkIFdpLUZpIE5vZGVzOiAkKCREZXZpY2VzLkNvdW50KSByZWFsIGRldmljZXMiIC1Gb3JlZ3JvdW5kQ29sb3IgR3JlZW4KZm9yZWFjaCAoJGQgaW4gJERldmljZXMpIHsKICAgICR0YWcgPSBpZiAoJGQudHJ1c3RlZCkgeyAiVFJVU1RFRCIgfSBlbHNlIHsgIlVOUkVDT0dOSVpFRCIgfQogICAgV3JpdGUtSG9zdCAoIiAgICAgLSB7MCwtMTV9IHwgezEsLTE3fSB8IHsyfSBbezN9XSIgLWYgJGQuaXAsICRkLm1hYywgJGQubmFtZSwgJHRhZykKfQpXcml0ZS1Ib3N0ICIgWytdIExvY2FsIFRlbGVtZXRyeSBBUEkgICA6IGh0dHA6Ly9sb2NhbGhvc3Q6JFBvcnQvYXBpL2xpdmUiIC1Gb3JlZ3JvdW5kQ29sb3IgQ3lhbgpXcml0ZS1Ib3N0ICI9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0iIC1Gb3JlZ3JvdW5kQ29sb3IgQ3lhbgpXcml0ZS1Ib3N0ICIgS2VlcCB0aGlzIHdpbmRvdyBvcGVuISBHbyBiYWNrIHRvIGh0dHBzOi8vY2x2bmN4MS13ZWIuZ2l0aHViLmlvL25ldHB1bHNlLyIgLUZvcmVncm91bmRDb2xvciBZZWxsb3cKV3JpdGUtSG9zdCAiIGFuZCBjbGljayAnQ29ubmVjdCBSZWFsIEhvbWUgV2ktRmknIC0+ICdDb25uZWN0JyEiIC1Gb3JlZ3JvdW5kQ29sb3IgWWVsbG93CgokTGlzdGVuZXIgPSBOZXctT2JqZWN0IFN5c3RlbS5OZXQuSHR0cExpc3RlbmVyCiRMaXN0ZW5lci5QcmVmaXhlcy5BZGQoImh0dHA6Ly9sb2NhbGhvc3Q6JFBvcnQvIikKJExpc3RlbmVyLlByZWZpeGVzLkFkZCgiaHR0cDovLzEyNy4wLjAuMTokUG9ydC8iKQokTGlzdGVuZXIuU3RhcnQoKQoKdHJ5IHsKICAgIHdoaWxlICgkTGlzdGVuZXIuSXNMaXN0ZW5pbmcpIHsKICAgICAgICAkY3R4ID0gJExpc3RlbmVyLkdldENvbnRleHQoKQogICAgICAgICRyZXEgPSAkY3R4LlJlcXVlc3QKICAgICAgICAkcmVzID0gJGN0eC5SZXNwb25zZQoKICAgICAgICAkcmVzLkhlYWRlcnMuQWRkKCJBY2Nlc3MtQ29udHJvbC1BbGxvdy1PcmlnaW4iLCAiKiIpCiAgICAgICAgJHJlcy5IZWFkZXJzLkFkZCgiQWNjZXNzLUNvbnRyb2wtQWxsb3ctTWV0aG9kcyIsICJHRVQsIFBPU1QsIE9QVElPTlMiKQogICAgICAgICRyZXMuSGVhZGVycy5BZGQoIkFjY2Vzcy1Db250cm9sLUFsbG93LUhlYWRlcnMiLCAiQ29udGVudC1UeXBlIikKICAgICAgICAkcmVzLkhlYWRlcnMuQWRkKCJBY2Nlc3MtQ29udHJvbC1BbGxvdy1Qcml2YXRlLU5ldHdvcmsiLCAidHJ1ZSIpCiAgICAgICAgJHJlcy5IZWFkZXJzLkFkZCgiQ2FjaGUtQ29udHJvbCIsICJuby1zdG9yZSIpCgogICAgICAgIGlmICgkcmVxLkh0dHBNZXRob2QgLWVxICJPUFRJT05TIikgewogICAgICAgICAgICAkcmVzLlN0YXR1c0NvZGUgPSAyMDQKICAgICAgICAgICAgJHJlcy5DbG9zZSgpCiAgICAgICAgICAgIGNvbnRpbnVlCiAgICAgICAgfQoKICAgICAgICAjIFVwZGF0ZSBsaXZlIE9TIGJhbmR3aWR0aCBkZWx0YQogICAgICAgICRub3cgPSBHZXQtRGF0ZQogICAgICAgICRkdCA9IFtNYXRoXTo6TWF4KDAuMiwgKCRub3cgLSAkTGFzdFRpbWUpLlRvdGFsU2Vjb25kcykKICAgICAgICAkY3VyQnl0ZXMgPSBHZXQtVG90YWxOZXRCeXRlcwogICAgICAgICRkb3duTWJwcyA9IFtNYXRoXTo6Um91bmQoW01hdGhdOjpNYXgoMC4wLCAoKCRjdXJCeXRlcy5SeCAtICRMYXN0Qnl0ZXMuUngpICogOC4wKSAvICgkZHQgKiAxMDAwMDAwLjApKSwgMikKICAgICAgICAkdXBNYnBzID0gW01hdGhdOjpSb3VuZChbTWF0aF06Ok1heCgwLjAsICgoJGN1ckJ5dGVzLlR4IC0gJExhc3RCeXRlcy5UeCkgKiA4LjApIC8gKCRkdCAqIDEwMDAwMDAuMCkpLCAyKQogICAgICAgICRMYXN0Qnl0ZXMgPSAkY3VyQnl0ZXMKICAgICAgICAkTGFzdFRpbWUgPSAkbm93CiAgICAgICAgaWYgKCRkb3duTWJwcyAtZ3QgJFBlYWtEb3duKSB7ICRQZWFrRG93biA9ICRkb3duTWJwcyB9CiAgICAgICAgJHRvdGFsR0IgPSBbTWF0aF06OlJvdW5kKCgkY3VyQnl0ZXMuUnggKyAkY3VyQnl0ZXMuVHgpIC8gMTA3Mzc0MTgyNC4wLCAyKQoKICAgICAgICBpZiAoJERvd25TZXJpZXMuQ291bnQgLWdlIDYwKSB7ICREb3duU2VyaWVzLlJlbW92ZUF0KDApIH0KICAgICAgICBpZiAoJFVwU2VyaWVzLkNvdW50IC1nZSA2MCkgeyAkVXBTZXJpZXMuUmVtb3ZlQXQoMCkgfQogICAgICAgIFt2b2lkXSREb3duU2VyaWVzLkFkZCgkZG93bk1icHMpCiAgICAgICAgW3ZvaWRdJFVwU2VyaWVzLkFkZCgkdXBNYnBzKQoKICAgICAgICBpZiAoKCRub3cgLSAkTGFzdEFycFNjYW4pLlRvdGFsU2Vjb25kcyAtZ2UgMTUpIHsKICAgICAgICAgICAgJERldmljZXMgPSBTY2FuLUhvbWVEZXZpY2VzIC1TdWJuZXRQcmVmaXggJFN1Ym5ldFByZWZpeCAtTG9jYWxJcCAkTG9jYWxJcAogICAgICAgICAgICAkTGFzdEFycFNjYW4gPSAkbm93CiAgICAgICAgfQogICAgICAgIGlmICgkRGV2aWNlcy5Db3VudCAtZ3QgMCkgewogICAgICAgICAgICAkRGV2aWNlc1swXS5saXZlTWJwcyA9IFtNYXRoXTo6Um91bmQoJGRvd25NYnBzICsgJHVwTWJwcywgMikKICAgICAgICAgICAgJERldmljZXNbMF0udG9kYXlHQiA9ICR0b3RhbEdCCiAgICAgICAgfQoKICAgICAgICAkcGF0aCA9ICRyZXEuVXJsLkFic29sdXRlUGF0aAoKICAgICAgICBpZiAoJHJlcS5IdHRwTWV0aG9kIC1lcSAiUE9TVCIgLWFuZCAkcGF0aCAtZXEgIi9hcGkvZGV2aWNlcy9xdWFyYW50aW5lIikgewogICAgICAgICAgICAkcmVhZGVyID0gTmV3LU9iamVjdCBTeXN0ZW0uSU8uU3RyZWFtUmVhZGVyKCRyZXEuSW5wdXRTdHJlYW0pCiAgICAgICAgICAgICRib2R5VGV4dCA9ICRyZWFkZXIuUmVhZFRvRW5kKCkKICAgICAgICAgICAgJHJlYWRlci5DbG9zZSgpCiAgICAgICAgICAgIHRyeSB7CiAgICAgICAgICAgICAgICAkYm9keU9iaiA9ICRib2R5VGV4dCB8IENvbnZlcnRGcm9tLUpzb24KICAgICAgICAgICAgICAgICR0YXJnZXRJcCA9IFtzdHJpbmddJGJvZHlPYmouaXAKICAgICAgICAgICAgICAgIGlmICgkUXVhcmFudGluZWRJcHMuQ29udGFpbnMoJHRhcmdldElwKSkgewogICAgICAgICAgICAgICAgICAgIFt2b2lkXSRRdWFyYW50aW5lZElwcy5SZW1vdmUoJHRhcmdldElwKQogICAgICAgICAgICAgICAgICAgICRxU3RhdGUgPSAkZmFsc2UKICAgICAgICAgICAgICAgIH0gZWxzZSB7CiAgICAgICAgICAgICAgICAgICAgW3ZvaWRdJFF1YXJhbnRpbmVkSXBzLkFkZCgkdGFyZ2V0SXApCiAgICAgICAgICAgICAgICAgICAgJHFTdGF0ZSA9ICR0cnVlCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICBmb3JlYWNoICgkZCBpbiAkRGV2aWNlcykgewogICAgICAgICAgICAgICAgICAgIGlmICgkZC5pcCAtZXEgJHRhcmdldElwKSB7ICRkLmJsb2NrZWQgPSAkcVN0YXRlIH0KICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICRwYXlsb2FkID0gQHsgaXAgPSAkdGFyZ2V0SXA7IHF1YXJhbnRpbmVkID0gJHFTdGF0ZSB9IHwgQ29udmVydFRvLUpzb24gLURlcHRoIDQKICAgICAgICAgICAgfSBjYXRjaCB7CiAgICAgICAgICAgICAgICAkcGF5bG9hZCA9IEB7IGVycm9yID0gIkludmFsaWQgSlNPTiIgfSB8IENvbnZlcnRUby1Kc29uCiAgICAgICAgICAgIH0KICAgICAgICB9IGVsc2UgewogICAgICAgICAgICAkcGF5bG9hZE9iaiA9IEB7CiAgICAgICAgICAgICAgICBsaXZlQWdlbnQgPSAkdHJ1ZQogICAgICAgICAgICAgICAgaG9zdElwID0gJExvY2FsSXAKICAgICAgICAgICAgICAgIHN1Ym5ldCA9ICIkU3VibmV0UHJlZml4LjAvMjQiCiAgICAgICAgICAgICAgICBsaXZlRG93bmxvYWRNYnBzID0gJGRvd25NYnBzCiAgICAgICAgICAgICAgICBsaXZlVXBsb2FkTWJwcyA9ICR1cE1icHMKICAgICAgICAgICAgICAgIHBlYWtEb3dubG9hZE1icHMgPSAkUGVha0Rvd24KICAgICAgICAgICAgICAgIHRvdGFsRGF0YUdCID0gJHRvdGFsR0IKICAgICAgICAgICAgICAgIGRvd25sb2FkU2VyaWVzID0gQCgkRG93blNlcmllcykKICAgICAgICAgICAgICAgIHVwbG9hZFNlcmllcyA9IEAoJFVwU2VyaWVzKQogICAgICAgICAgICAgICAgZGV2aWNlcyA9IEAoJERldmljZXMpCiAgICAgICAgICAgIH0KICAgICAgICAgICAgJHBheWxvYWQgPSAkcGF5bG9hZE9iaiB8IENvbnZlcnRUby1Kc29uIC1EZXB0aCA1CiAgICAgICAgfQoKICAgICAgICAkYnVmID0gW1N5c3RlbS5UZXh0LkVuY29kaW5nXTo6VVRGOC5HZXRCeXRlcygkcGF5bG9hZCkKICAgICAgICAkcmVzLkNvbnRlbnRUeXBlID0gImFwcGxpY2F0aW9uL2pzb247IGNoYXJzZXQ9dXRmLTgiCiAgICAgICAgJHJlcy5Db250ZW50TGVuZ3RoNjQgPSAkYnVmLkxlbmd0aAogICAgICAgICRyZXMuT3V0cHV0U3RyZWFtLldyaXRlKCRidWYsIDAsICRidWYuTGVuZ3RoKQogICAgICAgICRyZXMuQ2xvc2UoKQogICAgfQp9IGZpbmFsbHkgewogICAgJExpc3RlbmVyLlN0b3AoKQp9Cg==";
+    window.EMBEDDED_AGENT_B64 = "IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwoiIiIKSi5BLlIuVi5JLlMuIC8vIE5ldFB1bHNlIExpdmUgSG9tZSBXaS1GaSBBZ2VudCAoU2luZ2xlLUZpbGUgQ3Jvc3MtUGxhdGZvcm0gRWRpdGlvbikKV29ya3Mgb24gbWFjT1MsIFdpbmRvd3MsIGFuZCBMaW51eCB3aXRoIFpFUk8gdGhpcmQtcGFydHkgZGVwZW5kZW5jaWVzLgoKV2hhdCB0aGlzIGFnZW50IGRvZXMgd2hlbiBydW4gb24geW91ciBjb21wdXRlciBhdCBob21lOgoxLiBEZXRlY3RzIHlvdXIgaG9tZSBXaS1GaSBzdWJuZXQgKGUuZy4sIDE5Mi4xNjguMS4wLzI0IG9yIDE5Mi4xNjguMC4wLzI0KS4KMi4gUGVyZm9ybXMgYW4gYWN0aXZlIGxvY2FsIHN1Ym5ldCBkaXNjb3Zlcnkgc3dlZXAgKyBBUlAgY2FjaGUgaW5zcGVjdGlvbiAoYGFycCAtYWAgLyBgaXAgbmVpZ2hgKQogICB0byBmaW5kIGV2ZXJ5IHJlYWwgcGhvbmUsIGxhcHRvcCwgU21hcnQgVFYsIGNvbnNvbGUsIGFuZCB1bmtub3duIGRldmljZSBvbiB5b3VyIFdpLUZpLgozLiBSZWFkcyByZWFsIE9TIG5ldHdvcmsgaW50ZXJmYWNlIGJ5dGUgY291bnRlcnMgKFdpbmRvd3MgYG5ldHN0YXQgLWVgLCBtYWNPUyBgbmV0c3RhdCAtaWJgLAogICBMaW51eCBgL3Byb2MvbmV0L2RldmApIGFuZCBhY3RpdmUgYXBwbGljYXRpb24gc29ja2V0cyB0byBtZWFzdXJlIGxpdmUgYmFuZHdpZHRoLgo0LiBSdW5zIHRoZSBidWlsdC1pbiBXaG9sZS1Ib21lIEROUyBQcm94eSAmIFNpbmtob2xlIChVRFAgcG9ydCA1MyBvciA1MzU0KSBzbyB5b3UgY2FuCiAgIGJsb2NrIGFkcyBhbmQgcXVhcmFudGluZS9jdXQgb2ZmIHVua25vd24gZGV2aWNlcyBhY3Jvc3MgeW91ciBob21lIG5ldHdvcmsuCjUuIEV4cG9zZXMgaHR0cDovL2xvY2FsaG9zdDo4MDgwIHdpdGggQ09SUyBlbmFibGVkIHNvIHRoZSBKLkEuUi5WLkkuUy4gV2ViIEhVRAogICBhdXRvbWF0aWNhbGx5IHN3aXRjaGVzIGZyb20gRGVtbyBQcmV2aWV3IHRvIExJVkUgSE9NRSBXSS1GSSBtb2RlLgoKVXNhZ2U6CiAgICBweXRob24zIGphcnZpc19ob21lX2FnZW50LnB5CiAgICAjIE9yIHdpdGggc3RhbmRhcmQgRE5TIHBvcnQgNTMgdG8gYWN0IGFzIHlvdXIgcm91dGVyJ3MgV2hvbGUtSG9tZSBETlMgU2lua2hvbGU6CiAgICBzdWRvIHB5dGhvbjMgamFydmlzX2hvbWVfYWdlbnQucHkgLS1kbnMtcG9ydCA1MwoiIiIKCmZyb20gX19mdXR1cmVfXyBpbXBvcnQgYW5ub3RhdGlvbnMKCmltcG9ydCBhcmdwYXJzZQppbXBvcnQganNvbgppbXBvcnQgb3MKaW1wb3J0IHBsYXRmb3JtCmltcG9ydCByZQppbXBvcnQgc29ja2V0CmltcG9ydCBzdHJ1Y3QKaW1wb3J0IHN1YnByb2Nlc3MKaW1wb3J0IHRocmVhZGluZwppbXBvcnQgdGltZQpmcm9tIGNvbGxlY3Rpb25zIGltcG9ydCBkZXF1ZQpmcm9tIGRhdGV0aW1lIGltcG9ydCBkYXRldGltZQpmcm9tIGh0dHAuc2VydmVyIGltcG9ydCBCYXNlSFRUUFJlcXVlc3RIYW5kbGVyLCBUaHJlYWRpbmdIVFRQU2VydmVyCmZyb20gdHlwaW5nIGltcG9ydCBBbnksIERpY3QsIExpc3QsIE9wdGlvbmFsLCBUdXBsZQpmcm9tIHVybGxpYi5wYXJzZSBpbXBvcnQgdXJscGFyc2UKCgojIENvbW1vbiBNQUMgT1VJIFZlbmRvciBQcmVmaXhlcyBmb3IgSG9tZSBXaS1GaSBEZXZpY2UgSWRlbnRpZmljYXRpb24KT1VJX1ZFTkRPUlMgPSB7CiAgICAiQTQ6ODM6RTciOiAoIkFwcGxlIERldmljZSIsICJBcHBsZSIpLAogICAgIkJDOkQwOjc0IjogKCJBcHBsZSBpUGhvbmUgLyBpUGFkIiwgIkFwcGxlIiksCiAgICAiRjg6NEQ6ODkiOiAoIkFwcGxlIE1hY0Jvb2siLCAiQXBwbGUiKSwKICAgICIwMDoxNzpGMiI6ICgiQXBwbGUgRGV2aWNlIiwgIkFwcGxlIiksCiAgICAiM0M6MjI6RkIiOiAoIkFwcGxlIERldmljZSIsICJBcHBsZSIpLAogICAgIkQ4OkJCOkMxIjogKCJEZXNrdG9wIC8gUEMiLCAiSW50ZWwiKSwKICAgICJEQzpBNjozMiI6ICgiUmFzcGJlcnJ5IFBpIC8gU21hcnQgSHViIiwgIlJhc3BiZXJyeSBQaSIpLAogICAgIkI4OjI3OkVCIjogKCJSYXNwYmVycnkgUGkgLyBJb1QiLCAiUmFzcGJlcnJ5IFBpIiksCiAgICAiNzA6OUU6MjkiOiAoIlBsYXlTdGF0aW9uIENvbnNvbGUiLCAiU29ueSIpLAogICAgIjVDOkFBOkZEIjogKCJTb25vcyBTbWFydCBTcGVha2VyIiwgIlNvbm9zIiksCiAgICAiRjA6OUY6QzIiOiAoIlVuaUZpIC8gTmV0d29yayBHZWFyIiwgIlViaXF1aXRpIiksCiAgICAiNDQ6NjU6MEQiOiAoIkFtYXpvbiBFY2hvIC8gRmlyZVRWIiwgIkFtYXpvbiIpLAogICAgIkIwOkZDOjM2IjogKCJSb2t1IFNtYXJ0IFRWIiwgIlJva3UiKSwKICAgICI4Qzo3OTpGNSI6ICgiU2Ftc3VuZyBHYWxheHkgLyBTbWFydCBUViIsICJTYW1zdW5nIiksCiAgICAiMjQ6RjU6QUEiOiAoIlNhbXN1bmcgRGV2aWNlIiwgIlNhbXN1bmciKSwKICAgICIzMDpGRDozOCI6ICgiR29vZ2xlIE5lc3QgLyBDaHJvbWVjYXN0IiwgIkdvb2dsZSIpLAogICAgIjUwOkM3OkJGIjogKCJUUC1MaW5rIFNtYXJ0IFBsdWcgLyBSb3V0ZXIiLCAiVFAtTGluayIpLAp9CgoKZGVmIGRldGVjdF9sb2NhbF9pcF9hbmRfc3VibmV0KCkgLT4gVHVwbGVbc3RyLCBzdHJdOgogICAgIiIiUmV0dXJucyAobG9jYWxfaXAsIHN1Ym5ldF9wcmVmaXhfM19vY3RldHMpLiIiIgogICAgdHJ5OgogICAgICAgIHMgPSBzb2NrZXQuc29ja2V0KHNvY2tldC5BRl9JTkVULCBzb2NrZXQuU09DS19ER1JBTSkKICAgICAgICBzLmNvbm5lY3QoKCIxLjEuMS4xIiwgODApKQogICAgICAgIGlwID0gcy5nZXRzb2NrbmFtZSgpWzBdCiAgICAgICAgcy5jbG9zZSgpCiAgICAgICAgcGFydHMgPSBpcC5zcGxpdCgiLiIpCiAgICAgICAgaWYgbGVuKHBhcnRzKSA9PSA0OgogICAgICAgICAgICByZXR1cm4gaXAsICIuIi5qb2luKHBhcnRzWzozXSkKICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgcGFzcwogICAgcmV0dXJuICIxMjcuMC4wLjEiLCAiMTkyLjE2OC4xIgoKCmRlZiByZWFkX29zX25ldHdvcmtfYnl0ZXMoKSAtPiBUdXBsZVtpbnQsIGludF06CiAgICAiIiJDcm9zcy1wbGF0Zm9ybSByZWFkZXIgZm9yIHRvdGFsIChyeF9ieXRlcywgdHhfYnl0ZXMpIG9uIGFjdGl2ZSBuZXR3b3JrIGludGVyZmFjZXMuIiIiCiAgICBzeXNfbmFtZSA9IHBsYXRmb3JtLnN5c3RlbSgpLmxvd2VyKCkKICAgIHJ4X3RvdGFsLCB0eF90b3RhbCA9IDAsIDAKICAgIHRyeToKICAgICAgICBpZiBzeXNfbmFtZSA9PSAibGludXgiIGFuZCBvcy5wYXRoLmV4aXN0cygiL3Byb2MvbmV0L2RldiIpOgogICAgICAgICAgICB3aXRoIG9wZW4oIi9wcm9jL25ldC9kZXYiLCAiciIsIGVuY29kaW5nPSJ1dGYtOCIpIGFzIGY6CiAgICAgICAgICAgICAgICBmb3IgbGluZSBpbiBmLnJlYWRsaW5lcygpWzI6XToKICAgICAgICAgICAgICAgICAgICBpZiAiOiIgbm90IGluIGxpbmU6CiAgICAgICAgICAgICAgICAgICAgICAgIGNvbnRpbnVlCiAgICAgICAgICAgICAgICAgICAgaWZhY2UsIGRhdGEgPSBsaW5lLnNwbGl0KCI6IiwgMSkKICAgICAgICAgICAgICAgICAgICBpZiBpZmFjZS5zdHJpcCgpID09ICJsbyI6CiAgICAgICAgICAgICAgICAgICAgICAgIGNvbnRpbnVlCiAgICAgICAgICAgICAgICAgICAgZmllbGRzID0gZGF0YS5zcGxpdCgpCiAgICAgICAgICAgICAgICAgICAgaWYgbGVuKGZpZWxkcykgPj0gOToKICAgICAgICAgICAgICAgICAgICAgICAgcnhfdG90YWwgKz0gaW50KGZpZWxkc1swXSkKICAgICAgICAgICAgICAgICAgICAgICAgdHhfdG90YWwgKz0gaW50KGZpZWxkc1s4XSkKICAgICAgICBlbGlmIHN5c19uYW1lID09ICJkYXJ3aW4iOgogICAgICAgICAgICBvdXQgPSBzdWJwcm9jZXNzLmNoZWNrX291dHB1dChbIm5ldHN0YXQiLCAiLWliIl0sIHRleHQ9VHJ1ZSwgdGltZW91dD0yLjApCiAgICAgICAgICAgIGZvciBsaW5lIGluIG91dC5zcGxpdGxpbmVzKClbMTpdOgogICAgICAgICAgICAgICAgY29scyA9IGxpbmUuc3BsaXQoKQogICAgICAgICAgICAgICAgaWYgbGVuKGNvbHMpID49IDEwIGFuZCBub3QgY29sc1swXS5zdGFydHN3aXRoKCJsbyIpOgogICAgICAgICAgICAgICAgICAgIHRyeToKICAgICAgICAgICAgICAgICAgICAgICAgcnhfdG90YWwgKz0gaW50KGNvbHNbNl0pCiAgICAgICAgICAgICAgICAgICAgICAgIHR4X3RvdGFsICs9IGludChjb2xzWzldKQogICAgICAgICAgICAgICAgICAgIGV4Y2VwdCBWYWx1ZUVycm9yOgogICAgICAgICAgICAgICAgICAgICAgICBjb250aW51ZQogICAgICAgIGVsaWYgc3lzX25hbWUgPT0gIndpbmRvd3MiOgogICAgICAgICAgICBvdXQgPSBzdWJwcm9jZXNzLmNoZWNrX291dHB1dChbIm5ldHN0YXQiLCAiLWUiXSwgdGV4dD1UcnVlLCB0aW1lb3V0PTIuMCkKICAgICAgICAgICAgZm9yIGxpbmUgaW4gb3V0LnNwbGl0bGluZXMoKToKICAgICAgICAgICAgICAgIGlmICJCeXRlcyIgaW4gbGluZToKICAgICAgICAgICAgICAgICAgICBjb2xzID0gbGluZS5zcGxpdCgpCiAgICAgICAgICAgICAgICAgICAgaWYgbGVuKGNvbHMpID49IDM6CiAgICAgICAgICAgICAgICAgICAgICAgIHJ4X3RvdGFsID0gaW50KGNvbHNbMV0pCiAgICAgICAgICAgICAgICAgICAgICAgIHR4X3RvdGFsID0gaW50KGNvbHNbMl0pCiAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgIHBhc3MKICAgIHJldHVybiByeF90b3RhbCwgdHhfdG90YWwKCgpkZWYgc3dlZXBfYW5kX3NjYW5fYXJwKHN1Ym5ldF9wcmVmaXg6IHN0ciwgbG9jYWxfaXA6IHN0cikgLT4gTGlzdFtEaWN0W3N0ciwgQW55XV06CiAgICAiIiIKICAgIFNlbmRzIGEgZmFzdCBub24tYmxvY2tpbmcgVURQIHByb2JlIGFjcm9zcyB0aGUgbG9jYWwgLzI0IHN1Ym5ldCB0byBwb3B1bGF0ZSB0aGUgT1MgQVJQCiAgICB0YWJsZSwgdGhlbiBwYXJzZXMgYGlwIG5laWdoYCBhbmQgYGFycCAtYWAgYWNyb3NzIExpbnV4LCBtYWNPUywgYW5kIFdpbmRvd3MuCiAgICAiIiIKICAgIHRyeToKICAgICAgICBzb2NrID0gc29ja2V0LnNvY2tldChzb2NrZXQuQUZfSU5FVCwgc29ja2V0LlNPQ0tfREdSQU0pCiAgICAgICAgc29jay5zZXRibG9ja2luZyhGYWxzZSkKICAgICAgICBmb3IgaG9zdF9pZCBpbiByYW5nZSgxLCAyNTUpOgogICAgICAgICAgICB0YXJnZXQgPSBmIntzdWJuZXRfcHJlZml4fS57aG9zdF9pZH0iCiAgICAgICAgICAgIGlmIHRhcmdldCA9PSBsb2NhbF9pcDoKICAgICAgICAgICAgICAgIGNvbnRpbnVlCiAgICAgICAgICAgIHRyeToKICAgICAgICAgICAgICAgIHNvY2suc2VuZHRvKGIiIiwgKHRhcmdldCwgMTkwMCkpCiAgICAgICAgICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgICAgICAgICBwYXNzCiAgICAgICAgc29jay5jbG9zZSgpCiAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgIHBhc3MKCiAgICB0aW1lLnNsZWVwKDAuMjUpCiAgICBmb3VuZDogRGljdFtzdHIsIHN0cl0gPSB7fQoKICAgICMgMS4gVHJ5IGBpcCBuZWlnaGAgKExpbnV4KQogICAgdHJ5OgogICAgICAgIG91dCA9IHN1YnByb2Nlc3MuY2hlY2tfb3V0cHV0KFsiaXAiLCAibmVpZ2giXSwgdGV4dD1UcnVlLCB0aW1lb3V0PTIuMCkKICAgICAgICBmb3IgbGluZSBpbiBvdXQuc3BsaXRsaW5lcygpOgogICAgICAgICAgICBwYXJ0cyA9IGxpbmUuc3BsaXQoKQogICAgICAgICAgICBpZiBsZW4ocGFydHMpID49IDUgYW5kICJsbGFkZHIiIGluIHBhcnRzOgogICAgICAgICAgICAgICAgaXAgPSBwYXJ0c1swXQogICAgICAgICAgICAgICAgbWFjID0gcGFydHNbcGFydHMuaW5kZXgoImxsYWRkciIpICsgMV0udXBwZXIoKQogICAgICAgICAgICAgICAgaWYgcmUubWF0Y2gociJeXGQrXC5cZCtcLlxkK1wuXGQrJCIsIGlwKSBhbmQgbWFjICE9ICIwMDowMDowMDowMDowMDowMCI6CiAgICAgICAgICAgICAgICAgICAgZm91bmRbaXBdID0gbWFjCiAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgIHBhc3MKCiAgICAjIDIuIFRyeSBgYXJwIC1hYCAobWFjT1MsIFdpbmRvd3MsIExpbnV4KQogICAgdHJ5OgogICAgICAgIG91dCA9IHN1YnByb2Nlc3MuY2hlY2tfb3V0cHV0KFsiYXJwIiwgIi1hIl0sIHRleHQ9VHJ1ZSwgdGltZW91dD0yLjUpCiAgICAgICAgbWFjX3JlID0gcmUuY29tcGlsZShyIihbMC05YS1mQS1GXXsxLDJ9WzotXVswLTlhLWZBLUZdezEsMn1bOi1dWzAtOWEtZkEtRl17MSwyfVs6LV1bMC05YS1mQS1GXXsxLDJ9WzotXVswLTlhLWZBLUZdezEsMn1bOi1dWzAtOWEtZkEtRl17MSwyfSkiKQogICAgICAgIGlwX3JlID0gcmUuY29tcGlsZShyIihcZCtcLlxkK1wuXGQrXC5cZCspIikKICAgICAgICBmb3IgbGluZSBpbiBvdXQuc3BsaXRsaW5lcygpOgogICAgICAgICAgICBpcF9tID0gaXBfcmUuc2VhcmNoKGxpbmUpCiAgICAgICAgICAgIG1hY19tID0gbWFjX3JlLnNlYXJjaChsaW5lKQogICAgICAgICAgICBpZiBpcF9tIGFuZCBtYWNfbToKICAgICAgICAgICAgICAgIGlwID0gaXBfbS5ncm91cCgxKQogICAgICAgICAgICAgICAgcmF3X21hYyA9IG1hY19tLmdyb3VwKDEpLnJlcGxhY2UoIi0iLCAiOiIpLnVwcGVyKCkKICAgICAgICAgICAgICAgIG5vcm1fbWFjID0gIjoiLmpvaW4ocC56ZmlsbCgyKSBmb3IgcCBpbiByYXdfbWFjLnNwbGl0KCI6IikpCiAgICAgICAgICAgICAgICBpZiBub3JtX21hYyBub3QgaW4gKCJGRjpGRjpGRjpGRjpGRjpGRiIsICIwMDowMDowMDowMDowMDowMCIpIGFuZCBub3QgaXAuc3RhcnRzd2l0aCgiMjI0LiIpIGFuZCBub3QgaXAuZW5kc3dpdGgoIi4yNTUiKToKICAgICAgICAgICAgICAgICAgICBmb3VuZFtpcF0gPSBub3JtX21hYwogICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICBwYXNzCgogICAgZGV2aWNlczogTGlzdFtEaWN0W3N0ciwgQW55XV0gPSBbXQogICAgIyBBbHdheXMgaW5jbHVkZSB0aGUgbG9jYWwgaG9zdCBydW5uaW5nIHRoZSBhZ2VudAogICAgZGV2aWNlcy5hcHBlbmQoewogICAgICAgICJpZCI6ICJob3N0LXNlbGYiLAogICAgICAgICJuYW1lIjogZiJ7cGxhdGZvcm0ubm9kZSgpIG9yICdUaGlzIENvbXB1dGVyJ30gKEouQS5SLlYuSS5TLiBIb3N0KSIsCiAgICAgICAgInR5cGUiOiBmIntwbGF0Zm9ybS5zeXN0ZW0oKX0gSG9zdCIsCiAgICAgICAgImNvbm5lY3Rpb24iOiAiTG9jYWwgV2ktRmkgLyBMQU4iLAogICAgICAgICJpcCI6IGxvY2FsX2lwLAogICAgICAgICJtYWMiOiAiTE9DQUwtSE9TVCIsCiAgICAgICAgInRydXN0ZWQiOiBUcnVlLAogICAgICAgICJibG9ja2VkIjogRmFsc2UsCiAgICAgICAgImxpdmVNYnBzIjogMC4wLAogICAgICAgICJ0b2RheUdCIjogMC40LAogICAgfSkKCiAgICBmb3IgaXAsIG1hYyBpbiBzb3J0ZWQoZm91bmQuaXRlbXMoKSk6CiAgICAgICAgaWYgaXAgPT0gbG9jYWxfaXA6CiAgICAgICAgICAgIGNvbnRpbnVlCiAgICAgICAgcHJlZml4ID0gbWFjWzo4XQogICAgICAgIGxhYmVsLCB2ZW5kb3IgPSBPVUlfVkVORE9SUy5nZXQocHJlZml4LCAoIldpLUZpIERldmljZSIsICJVbnZlcmlmaWVkIFZlbmRvciIpKQogICAgICAgIGhvc3RuYW1lID0gIiIKICAgICAgICB0cnk6CiAgICAgICAgICAgIHNvY2tldC5zZXRkZWZhdWx0dGltZW91dCgwLjI1KQogICAgICAgICAgICBob3N0bmFtZSA9IHNvY2tldC5nZXRob3N0YnlhZGRyKGlwKVswXS5zcGxpdCgiLiIpWzBdCiAgICAgICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICAgICAgaG9zdG5hbWUgPSAiIgoKICAgICAgICBpc19yb3V0ZXIgPSBpcC5lbmRzd2l0aCgiLjEiKSBvciBpcC5lbmRzd2l0aCgiLjI1NCIpCiAgICAgICAgaWYgaXNfcm91dGVyOgogICAgICAgICAgICBuYW1lID0gZiJIb21lIFdpLUZpIFJvdXRlciAoe2lwfSkiCiAgICAgICAgICAgIGRldl90eXBlID0gIkdhdGV3YXkgUm91dGVyIgogICAgICAgICAgICB0cnVzdGVkID0gVHJ1ZQogICAgICAgIGVsaWYgaG9zdG5hbWUgYW5kIGhvc3RuYW1lICE9IGlwOgogICAgICAgICAgICBuYW1lID0gaG9zdG5hbWUKICAgICAgICAgICAgZGV2X3R5cGUgPSBmInt2ZW5kb3J9ICh7bGFiZWx9KSIKICAgICAgICAgICAgdHJ1c3RlZCA9IFRydWUKICAgICAgICBlbGlmIHByZWZpeCBpbiBPVUlfVkVORE9SUzoKICAgICAgICAgICAgbmFtZSA9IGYie2xhYmVsfSAoe2lwLnNwbGl0KCcuJylbLTFdfSkiCiAgICAgICAgICAgIGRldl90eXBlID0gdmVuZG9yCiAgICAgICAgICAgIHRydXN0ZWQgPSBUcnVlCiAgICAgICAgZWxzZToKICAgICAgICAgICAgbmFtZSA9IGYiVW5rbm93biBEZXZpY2Ute21hY1stNTpdLnJlcGxhY2UoJzonLCAnJyl9IgogICAgICAgICAgICBkZXZfdHlwZSA9ICJVbnJlY29nbml6ZWQgTUFDIgogICAgICAgICAgICB0cnVzdGVkID0gRmFsc2UKCiAgICAgICAgZGV2aWNlcy5hcHBlbmQoewogICAgICAgICAgICAiaWQiOiBmImRldi17aXAucmVwbGFjZSgnLicsICctJyl9IiwKICAgICAgICAgICAgIm5hbWUiOiBuYW1lLAogICAgICAgICAgICAidHlwZSI6IGRldl90eXBlLAogICAgICAgICAgICAiY29ubmVjdGlvbiI6ICJIb21lIFdpLUZpIC8gTEFOIiwKICAgICAgICAgICAgImlwIjogaXAsCiAgICAgICAgICAgICJtYWMiOiBtYWMsCiAgICAgICAgICAgICJ0cnVzdGVkIjogdHJ1c3RlZCwKICAgICAgICAgICAgImJsb2NrZWQiOiBGYWxzZSwKICAgICAgICAgICAgImxpdmVNYnBzIjogMC4wLAogICAgICAgICAgICAidG9kYXlHQiI6IDAuMSwKICAgICAgICB9KQoKICAgIHJldHVybiBkZXZpY2VzCgoKY2xhc3MgTGl2ZUhvbWVHYXRld2F5RW5naW5lOgogICAgZGVmIF9faW5pdF9fKHNlbGYsIGRuc19wb3J0OiBpbnQgPSA1MzU0KSAtPiBOb25lOgogICAgICAgIHNlbGYubG9jayA9IHRocmVhZGluZy5Mb2NrKCkKICAgICAgICBzZWxmLmRuc19wb3J0ID0gZG5zX3BvcnQKICAgICAgICBzZWxmLmxvY2FsX2lwLCBzZWxmLnN1Ym5ldF9wcmVmaXggPSBkZXRlY3RfbG9jYWxfaXBfYW5kX3N1Ym5ldCgpCiAgICAgICAgc2VsZi5sYXN0X3J4LCBzZWxmLmxhc3RfdHggPSByZWFkX29zX25ldHdvcmtfYnl0ZXMoKQogICAgICAgIHNlbGYubGFzdF90cyA9IHRpbWUudGltZSgpCgogICAgICAgIHNlbGYuZG93bmxvYWRfc2VyaWVzOiBkZXF1ZVtmbG9hdF0gPSBkZXF1ZShbMC4wXSAqIDYwLCBtYXhsZW49NjApCiAgICAgICAgc2VsZi51cGxvYWRfc2VyaWVzOiBkZXF1ZVtmbG9hdF0gPSBkZXF1ZShbMC4wXSAqIDYwLCBtYXhsZW49NjApCiAgICAgICAgc2VsZi5wZWFrX2Rvd24gPSAwLjAKICAgICAgICBzZWxmLnRvdGFsX2diID0gcm91bmQoKHNlbGYubGFzdF9yeCArIHNlbGYubGFzdF90eCkgLyAoMTAyNCAqKiAzKSwgMikKCiAgICAgICAgc2VsZi5xdWFyYW50aW5lZF9pcHM6IHNldFtzdHJdID0gc2V0KCkKICAgICAgICBzZWxmLnRydXN0ZWRfaXBzOiBzZXRbc3RyXSA9IHtzZWxmLmxvY2FsX2lwLCBmIntzZWxmLnN1Ym5ldF9wcmVmaXh9LjEifQogICAgICAgIHNlbGYuZGV2aWNlczogTGlzdFtEaWN0W3N0ciwgQW55XV0gPSBzd2VlcF9hbmRfc2Nhbl9hcnAoc2VsZi5zdWJuZXRfcHJlZml4LCBzZWxmLmxvY2FsX2lwKQogICAgICAgIHNlbGYuYmxvY2tlZF9xdWVyaWVzID0gMAogICAgICAgIHNlbGYudG90YWxfcXVlcmllcyA9IDAKICAgICAgICBzZWxmLm1lc3NhZ2VzOiBkZXF1ZVtEaWN0W3N0ciwgQW55XV0gPSBkZXF1ZShtYXhsZW49ODApCgogICAgICAgIHNlbGYubWVzc2FnZXMuYXBwZW5kbGVmdCh7CiAgICAgICAgICAgICJpZCI6IGludCh0aW1lLnRpbWUoKSAqIDEwMDApLAogICAgICAgICAgICAidGltZSI6IGRhdGV0aW1lLm5vdygpLnN0cmZ0aW1lKCIlSDolTTolUyIpLAogICAgICAgICAgICAiZGV2aWNlIjogZiJKLkEuUi5WLkkuUy4gQWdlbnQgKHtzZWxmLmxvY2FsX2lwfSkiLAogICAgICAgICAgICAiYXBwIjogIkxpdmUgV2ktRmkgU2Nhbm5lciIsCiAgICAgICAgICAgICJjYXRlZ29yeSI6ICJMT0NBTCIsCiAgICAgICAgICAgICJyZWFkYWJsZSI6IFRydWUsCiAgICAgICAgICAgICJoZWFkbGluZSI6IGYiQ29ubmVjdGVkIHRvIGxpdmUgc3VibmV0IHtzZWxmLnN1Ym5ldF9wcmVmaXh9LjAvMjQg4oCUIGRpc2NvdmVyZWQge2xlbihzZWxmLmRldmljZXMpfSByZWFsIGRldmljZXMiLAogICAgICAgICAgICAiZXhwbGFuYXRpb24iOiAiSi5BLlIuVi5JLlMuIGlzIG5vdyByZWFkaW5nIHJlYWwgQVJQIG5laWdoYm9yIHRhYmxlcyBhbmQgbGl2ZSBuZXR3b3JrIGludGVyZmFjZSBjb3VudGVycyBmcm9tIHlvdXIgY29tcHV0ZXIuIiwKICAgICAgICAgICAgInJhd0lwIjogZiJ7c2VsZi5sb2NhbF9pcH0gKFN1Ym5ldCB7c2VsZi5zdWJuZXRfcHJlZml4fS4wLzI0KSIsCiAgICAgICAgICAgICJyYXdQYXlsb2FkIjogIlxuIi5qb2luKGYie2RbJ2lwJ119IC0+IHtkWydtYWMnXX0gKHtkWyduYW1lJ119KSIgZm9yIGQgaW4gc2VsZi5kZXZpY2VzKSwKICAgICAgICB9KQoKICAgICAgICB0aHJlYWRpbmcuVGhyZWFkKHRhcmdldD1zZWxmLl90ZWxlbWV0cnlfbG9vcCwgZGFlbW9uPVRydWUpLnN0YXJ0KCkKICAgICAgICB0aHJlYWRpbmcuVGhyZWFkKHRhcmdldD1zZWxmLl9hcnBfcmVmcmVzaF9sb29wLCBkYWVtb249VHJ1ZSkuc3RhcnQoKQogICAgICAgIHRocmVhZGluZy5UaHJlYWQodGFyZ2V0PXNlbGYuX3VkcF9kbnNfbG9vcCwgZGFlbW9uPVRydWUpLnN0YXJ0KCkKCiAgICBkZWYgX3RlbGVtZXRyeV9sb29wKHNlbGYpIC0+IE5vbmU6CiAgICAgICAgd2hpbGUgVHJ1ZToKICAgICAgICAgICAgdGltZS5zbGVlcCgxLjIpCiAgICAgICAgICAgIHJ4LCB0eCA9IHJlYWRfb3NfbmV0d29ya19ieXRlcygpCiAgICAgICAgICAgIG5vdyA9IHRpbWUudGltZSgpCiAgICAgICAgICAgIHdpdGggc2VsZi5sb2NrOgogICAgICAgICAgICAgICAgZHQgPSBtYXgoMC4yLCBub3cgLSBzZWxmLmxhc3RfdHMpCiAgICAgICAgICAgICAgICBkb3duX21icHMgPSByb3VuZChtYXgoMC4wLCAoKHJ4IC0gc2VsZi5sYXN0X3J4KSAqIDguMCkgLyAoZHQgKiAxXzAwMF8wMDApKSwgMikKICAgICAgICAgICAgICAgIHVwX21icHMgPSByb3VuZChtYXgoMC4wLCAoKHR4IC0gc2VsZi5sYXN0X3R4KSAqIDguMCkgLyAoZHQgKiAxXzAwMF8wMDApKSwgMikKICAgICAgICAgICAgICAgIHNlbGYubGFzdF9yeCwgc2VsZi5sYXN0X3R4LCBzZWxmLmxhc3RfdHMgPSByeCwgdHgsIG5vdwogICAgICAgICAgICAgICAgaWYgZG93bl9tYnBzID4gc2VsZi5wZWFrX2Rvd246CiAgICAgICAgICAgICAgICAgICAgc2VsZi5wZWFrX2Rvd24gPSBkb3duX21icHMKICAgICAgICAgICAgICAgIHNlbGYudG90YWxfZ2IgPSByb3VuZCgocnggKyB0eCkgLyAoMTAyNCAqKiAzKSwgMikKICAgICAgICAgICAgICAgIHNlbGYuZG93bmxvYWRfc2VyaWVzLmFwcGVuZChkb3duX21icHMpCiAgICAgICAgICAgICAgICBzZWxmLnVwbG9hZF9zZXJpZXMuYXBwZW5kKHVwX21icHMpCgogICAgICAgICAgICAgICAgaWYgc2VsZi5kZXZpY2VzOgogICAgICAgICAgICAgICAgICAgIHNlbGYuZGV2aWNlc1swXVsibGl2ZU1icHMiXSA9IHJvdW5kKGRvd25fbWJwcyArIHVwX21icHMsIDIpCiAgICAgICAgICAgICAgICAgICAgc2VsZi5kZXZpY2VzWzBdWyJ0b2RheUdCIl0gPSBzZWxmLnRvdGFsX2diCgogICAgZGVmIF9hcnBfcmVmcmVzaF9sb29wKHNlbGYpIC0+IE5vbmU6CiAgICAgICAgd2hpbGUgVHJ1ZToKICAgICAgICAgICAgdGltZS5zbGVlcCgxMi4wKQogICAgICAgICAgICBmcmVzaCA9IHN3ZWVwX2FuZF9zY2FuX2FycChzZWxmLnN1Ym5ldF9wcmVmaXgsIHNlbGYubG9jYWxfaXApCiAgICAgICAgICAgIHdpdGggc2VsZi5sb2NrOgogICAgICAgICAgICAgICAgZm9yIGQgaW4gZnJlc2g6CiAgICAgICAgICAgICAgICAgICAgZFsiYmxvY2tlZCJdID0gZFsiaXAiXSBpbiBzZWxmLnF1YXJhbnRpbmVkX2lwcwogICAgICAgICAgICAgICAgICAgIGlmIGRbImlwIl0gaW4gc2VsZi50cnVzdGVkX2lwczoKICAgICAgICAgICAgICAgICAgICAgICAgZFsidHJ1c3RlZCJdID0gVHJ1ZQogICAgICAgICAgICAgICAgc2VsZi5kZXZpY2VzID0gZnJlc2gKCiAgICBkZWYgX3VkcF9kbnNfbG9vcChzZWxmKSAtPiBOb25lOgogICAgICAgIHRyeToKICAgICAgICAgICAgc29jayA9IHNvY2tldC5zb2NrZXQoc29ja2V0LkFGX0lORVQsIHNvY2tldC5TT0NLX0RHUkFNKQogICAgICAgICAgICBzb2NrLnNldHNvY2tvcHQoc29ja2V0LlNPTF9TT0NLRVQsIHNvY2tldC5TT19SRVVTRUFERFIsIDEpCiAgICAgICAgICAgIHNvY2suYmluZCgoIjAuMC4wLjAiLCBzZWxmLmRuc19wb3J0KSkKICAgICAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgICAgICByZXR1cm4KCiAgICAgICAgd2hpbGUgVHJ1ZToKICAgICAgICAgICAgdHJ5OgogICAgICAgICAgICAgICAgZGF0YSwgYWRkciA9IHNvY2sucmVjdmZyb20oMjA0OCkKICAgICAgICAgICAgICAgIGNsaWVudF9pcCA9IGFkZHJbMF0KICAgICAgICAgICAgICAgIHdpdGggc2VsZi5sb2NrOgogICAgICAgICAgICAgICAgICAgIHNlbGYudG90YWxfcXVlcmllcyArPSAxCiAgICAgICAgICAgICAgICAgICAgaXNfcXVhcmFudGluZWQgPSBjbGllbnRfaXAgaW4gc2VsZi5xdWFyYW50aW5lZF9pcHMKICAgICAgICAgICAgICAgICAgICBpZiBpc19xdWFyYW50aW5lZDoKICAgICAgICAgICAgICAgICAgICAgICAgc2VsZi5ibG9ja2VkX3F1ZXJpZXMgKz0gMQogICAgICAgICAgICAgICAgaWYgaXNfcXVhcmFudGluZWQgYW5kIGxlbihkYXRhKSA+PSAxMjoKICAgICAgICAgICAgICAgICAgICB0eF9pZCA9IGRhdGFbOjJdCiAgICAgICAgICAgICAgICAgICAgcmVzcCA9IHR4X2lkICsgc3RydWN0LnBhY2soIiFISEhISEgiLCAweDgxODAsIDEsIDEsIDAsIDApICsgZGF0YVsxMjpdICsgc3RydWN0LnBhY2soIiFISEhMSDRzIiwgMHhDMDBDLCAxLCAxLCA2MCwgNCwgYiJceDAwXHgwMFx4MDBceDAwIikKICAgICAgICAgICAgICAgICAgICBzb2NrLnNlbmR0byhyZXNwLCBhZGRyKQogICAgICAgICAgICAgICAgZWxzZToKICAgICAgICAgICAgICAgICAgICAjIEZvcndhcmQgYWxsb3dlZCBETlMgcXVlcnkgdG8gMS4xLjEuMQogICAgICAgICAgICAgICAgICAgIHVwID0gc29ja2V0LnNvY2tldChzb2NrZXQuQUZfSU5FVCwgc29ja2V0LlNPQ0tfREdSQU0pCiAgICAgICAgICAgICAgICAgICAgdXAuc2V0dGltZW91dCgxLjUpCiAgICAgICAgICAgICAgICAgICAgdXAuc2VuZHRvKGRhdGEsICgiMS4xLjEuMSIsIDUzKSkKICAgICAgICAgICAgICAgICAgICByZXBseSwgXyA9IHVwLnJlY3Zmcm9tKDQwOTYpCiAgICAgICAgICAgICAgICAgICAgc29jay5zZW5kdG8ocmVwbHksIGFkZHIpCiAgICAgICAgICAgICAgICAgICAgdXAuY2xvc2UoKQogICAgICAgICAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgICAgICAgICAgcGFzcwoKICAgIGRlZiB0b2dnbGVfcXVhcmFudGluZShzZWxmLCBpcDogc3RyKSAtPiBib29sOgogICAgICAgIHdpdGggc2VsZi5sb2NrOgogICAgICAgICAgICBpZiBpcCBpbiBzZWxmLnF1YXJhbnRpbmVkX2lwczoKICAgICAgICAgICAgICAgIHNlbGYucXVhcmFudGluZWRfaXBzLnJlbW92ZShpcCkKICAgICAgICAgICAgICAgIHN0YXRlID0gRmFsc2UKICAgICAgICAgICAgZWxzZToKICAgICAgICAgICAgICAgIHNlbGYucXVhcmFudGluZWRfaXBzLmFkZChpcCkKICAgICAgICAgICAgICAgIHN0YXRlID0gVHJ1ZQogICAgICAgICAgICBmb3IgZCBpbiBzZWxmLmRldmljZXM6CiAgICAgICAgICAgICAgICBpZiBkWyJpcCJdID09IGlwOgogICAgICAgICAgICAgICAgICAgIGRbImJsb2NrZWQiXSA9IHN0YXRlCiAgICAgICAgICAgICAgICAgICAgaWYgc3RhdGU6CiAgICAgICAgICAgICAgICAgICAgICAgIGRbImxpdmVNYnBzIl0gPSAwLjAKICAgICAgICAgICAgcmV0dXJuIHN0YXRlCgogICAgZGVmIHRydXN0X2RldmljZShzZWxmLCBpcDogc3RyKSAtPiBOb25lOgogICAgICAgIHdpdGggc2VsZi5sb2NrOgogICAgICAgICAgICBzZWxmLnRydXN0ZWRfaXBzLmFkZChpcCkKICAgICAgICAgICAgc2VsZi5xdWFyYW50aW5lZF9pcHMuZGlzY2FyZChpcCkKICAgICAgICAgICAgZm9yIGQgaW4gc2VsZi5kZXZpY2VzOgogICAgICAgICAgICAgICAgaWYgZFsiaXAiXSA9PSBpcDoKICAgICAgICAgICAgICAgICAgICBkWyJ0cnVzdGVkIl0gPSBUcnVlCiAgICAgICAgICAgICAgICAgICAgZFsiYmxvY2tlZCJdID0gRmFsc2UKCiAgICBkZWYgc25hcHNob3Qoc2VsZikgLT4gRGljdFtzdHIsIEFueV06CiAgICAgICAgd2l0aCBzZWxmLmxvY2s6CiAgICAgICAgICAgIGN1cl9kb3duID0gc2VsZi5kb3dubG9hZF9zZXJpZXNbLTFdIGlmIHNlbGYuZG93bmxvYWRfc2VyaWVzIGVsc2UgMC4wCiAgICAgICAgICAgIGN1cl91cCA9IHNlbGYudXBsb2FkX3Nlcmllc1stMV0gaWYgc2VsZi51cGxvYWRfc2VyaWVzIGVsc2UgMC4wCiAgICAgICAgICAgIHJldHVybiB7CiAgICAgICAgICAgICAgICAibGl2ZUFnZW50IjogVHJ1ZSwKICAgICAgICAgICAgICAgICJob3N0SXAiOiBzZWxmLmxvY2FsX2lwLAogICAgICAgICAgICAgICAgInN1Ym5ldCI6IGYie3NlbGYuc3VibmV0X3ByZWZpeH0uMC8yNCIsCiAgICAgICAgICAgICAgICAiZG5zUG9ydCI6IHNlbGYuZG5zX3BvcnQsCiAgICAgICAgICAgICAgICAibGl2ZURvd25sb2FkTWJwcyI6IGN1cl9kb3duLAogICAgICAgICAgICAgICAgImxpdmVVcGxvYWRNYnBzIjogY3VyX3VwLAogICAgICAgICAgICAgICAgInBlYWtEb3dubG9hZE1icHMiOiBzZWxmLnBlYWtfZG93biwKICAgICAgICAgICAgICAgICJ0b3RhbERhdGFHQiI6IHNlbGYudG90YWxfZ2IsCiAgICAgICAgICAgICAgICAiZG93bmxvYWRTZXJpZXMiOiBsaXN0KHNlbGYuZG93bmxvYWRfc2VyaWVzKSwKICAgICAgICAgICAgICAgICJ1cGxvYWRTZXJpZXMiOiBsaXN0KHNlbGYudXBsb2FkX3NlcmllcyksCiAgICAgICAgICAgICAgICAiZGV2aWNlcyI6IHNlbGYuZGV2aWNlcywKICAgICAgICAgICAgICAgICJtZXNzYWdlcyI6IGxpc3Qoc2VsZi5tZXNzYWdlcyksCiAgICAgICAgICAgICAgICAicXVhcmFudGluZWRJcHMiOiBzb3J0ZWQoc2VsZi5xdWFyYW50aW5lZF9pcHMpLAogICAgICAgICAgICAgICAgImJsb2NrZWRRdWVyaWVzIjogc2VsZi5ibG9ja2VkX3F1ZXJpZXMsCiAgICAgICAgICAgICAgICAidG90YWxRdWVyaWVzIjogc2VsZi50b3RhbF9xdWVyaWVzLAogICAgICAgICAgICB9CgoKZW5naW5lOiBPcHRpb25hbFtMaXZlSG9tZUdhdGV3YXlFbmdpbmVdID0gTm9uZQoKCmNsYXNzIEFnZW50SFRUUEhhbmRsZXIoQmFzZUhUVFBSZXF1ZXN0SGFuZGxlcik6CiAgICBkZWYgbG9nX21lc3NhZ2Uoc2VsZiwgZm10OiBzdHIsICphcmdzKSAtPiBOb25lOgogICAgICAgIHJldHVybgoKICAgIGRlZiBfc2VuZF9qc29uKHNlbGYsIHBheWxvYWQ6IGRpY3QsIHN0YXR1czogaW50ID0gMjAwKSAtPiBOb25lOgogICAgICAgIGJvZHkgPSBqc29uLmR1bXBzKHBheWxvYWQpLmVuY29kZSgidXRmLTgiKQogICAgICAgIHNlbGYuc2VuZF9yZXNwb25zZShzdGF0dXMpCiAgICAgICAgc2VsZi5zZW5kX2hlYWRlcigiQ29udGVudC1UeXBlIiwgImFwcGxpY2F0aW9uL2pzb247IGNoYXJzZXQ9dXRmLTgiKQogICAgICAgIHNlbGYuc2VuZF9oZWFkZXIoIkNvbnRlbnQtTGVuZ3RoIiwgc3RyKGxlbihib2R5KSkpCiAgICAgICAgc2VsZi5zZW5kX2hlYWRlcigiQ2FjaGUtQ29udHJvbCIsICJuby1zdG9yZSIpCiAgICAgICAgc2VsZi5zZW5kX2hlYWRlcigiQWNjZXNzLUNvbnRyb2wtQWxsb3ctT3JpZ2luIiwgIioiKQogICAgICAgIHNlbGYuc2VuZF9oZWFkZXIoIkFjY2Vzcy1Db250cm9sLUFsbG93LU1ldGhvZHMiLCAiR0VULCBQT1NULCBPUFRJT05TIikKICAgICAgICBzZWxmLnNlbmRfaGVhZGVyKCJBY2Nlc3MtQ29udHJvbC1BbGxvdy1IZWFkZXJzIiwgIkNvbnRlbnQtVHlwZSIpCiAgICAgICAgc2VsZi5lbmRfaGVhZGVycygpCiAgICAgICAgc2VsZi53ZmlsZS53cml0ZShib2R5KQoKICAgIGRlZiBkb19PUFRJT05TKHNlbGYpIC0+IE5vbmU6CiAgICAgICAgc2VsZi5zZW5kX3Jlc3BvbnNlKDIwNCkKICAgICAgICBzZWxmLnNlbmRfaGVhZGVyKCJBY2Nlc3MtQ29udHJvbC1BbGxvdy1PcmlnaW4iLCAiKiIpCiAgICAgICAgc2VsZi5zZW5kX2hlYWRlcigiQWNjZXNzLUNvbnRyb2wtQWxsb3ctTWV0aG9kcyIsICJHRVQsIFBPU1QsIE9QVElPTlMiKQogICAgICAgIHNlbGYuc2VuZF9oZWFkZXIoIkFjY2Vzcy1Db250cm9sLUFsbG93LUhlYWRlcnMiLCAiQ29udGVudC1UeXBlIikKICAgICAgICBzZWxmLmVuZF9oZWFkZXJzKCkKCiAgICBkZWYgZG9fR0VUKHNlbGYpIC0+IE5vbmU6CiAgICAgICAgcGFyc2VkID0gdXJscGFyc2Uoc2VsZi5wYXRoKQogICAgICAgIGlmIHBhcnNlZC5wYXRoIGluICgiL2FwaS90ZWxlbWV0cnkiLCAiL2FwaS9saXZlIik6CiAgICAgICAgICAgIHNlbGYuX3NlbmRfanNvbihlbmdpbmUuc25hcHNob3QoKSkKICAgICAgICAgICAgcmV0dXJuCiAgICAgICAgc2VsZi5fc2VuZF9qc29uKHsic3RhdHVzIjogIkouQS5SLlYuSS5TLiBIb21lIFdpLUZpIEFnZW50IFJ1bm5pbmciLCAic3VibmV0IjogZW5naW5lLnN1Ym5ldF9wcmVmaXggKyAiLjAvMjQifSkKCiAgICBkZWYgZG9fUE9TVChzZWxmKSAtPiBOb25lOgogICAgICAgIHBhcnNlZCA9IHVybHBhcnNlKHNlbGYucGF0aCkKICAgICAgICBsZW5ndGggPSBpbnQoc2VsZi5oZWFkZXJzLmdldCgiQ29udGVudC1MZW5ndGgiLCAiMCIpKQogICAgICAgIGJvZHkgPSBqc29uLmxvYWRzKHNlbGYucmZpbGUucmVhZChsZW5ndGgpLmRlY29kZSgidXRmLTgiKSkgaWYgbGVuZ3RoID4gMCBlbHNlIHt9CgogICAgICAgIGlmIHBhcnNlZC5wYXRoID09ICIvYXBpL2RldmljZXMvcXVhcmFudGluZSI6CiAgICAgICAgICAgIGlwID0gYm9keS5nZXQoImlwIiwgIiIpCiAgICAgICAgICAgIGJsb2NrZWQgPSBlbmdpbmUudG9nZ2xlX3F1YXJhbnRpbmUoaXApCiAgICAgICAgICAgIHNlbGYuX3NlbmRfanNvbih7ImlwIjogaXAsICJxdWFyYW50aW5lZCI6IGJsb2NrZWQsICJzbmFwc2hvdCI6IGVuZ2luZS5zbmFwc2hvdCgpfSkKICAgICAgICAgICAgcmV0dXJuCgogICAgICAgIGlmIHBhcnNlZC5wYXRoID09ICIvYXBpL2RldmljZXMvdHJ1c3QiOgogICAgICAgICAgICBpcCA9IGJvZHkuZ2V0KCJpcCIsICIiKQogICAgICAgICAgICBlbmdpbmUudHJ1c3RfZGV2aWNlKGlwKQogICAgICAgICAgICBzZWxmLl9zZW5kX2pzb24oeyJpcCI6IGlwLCAidHJ1c3RlZCI6IFRydWUsICJzbmFwc2hvdCI6IGVuZ2luZS5zbmFwc2hvdCgpfSkKICAgICAgICAgICAgcmV0dXJuCgogICAgICAgIGlmIHBhcnNlZC5wYXRoID09ICIvYXBpL2RldmljZXMvcmVzY2FuIjoKICAgICAgICAgICAgZnJlc2ggPSBzd2VlcF9hbmRfc2Nhbl9hcnAoZW5naW5lLnN1Ym5ldF9wcmVmaXgsIGVuZ2luZS5sb2NhbF9pcCkKICAgICAgICAgICAgd2l0aCBlbmdpbmUubG9jazoKICAgICAgICAgICAgICAgIGVuZ2luZS5kZXZpY2VzID0gZnJlc2gKICAgICAgICAgICAgc2VsZi5fc2VuZF9qc29uKHsic25hcHNob3QiOiBlbmdpbmUuc25hcHNob3QoKX0pCiAgICAgICAgICAgIHJldHVybgoKICAgICAgICBzZWxmLl9zZW5kX2pzb24oeyJlcnJvciI6ICJVbmtub3duIGVuZHBvaW50In0sIDQwNCkKCgpkZWYgbWFpbigpIC0+IE5vbmU6CiAgICBnbG9iYWwgZW5naW5lCiAgICBwYXJzZXIgPSBhcmdwYXJzZS5Bcmd1bWVudFBhcnNlcihkZXNjcmlwdGlvbj0iSi5BLlIuVi5JLlMuIExpdmUgSG9tZSBXaS1GaSBBZ2VudCIpCiAgICBwYXJzZXIuYWRkX2FyZ3VtZW50KCItLXBvcnQiLCB0eXBlPWludCwgZGVmYXVsdD04MDgwLCBoZWxwPSJMb2NhbCBBUEkgcG9ydCAoZGVmYXVsdDogODA4MCkiKQogICAgcGFyc2VyLmFkZF9hcmd1bWVudCgiLS1kbnMtcG9ydCIsIHR5cGU9aW50LCBkZWZhdWx0PTUzNTQsIGhlbHA9IlVEUCBETlMgU2lua2hvbGUgcG9ydCAodXNlIDUzIHdpdGggc3VkbykiKQogICAgYXJncyA9IHBhcnNlci5wYXJzZV9hcmdzKCkKCiAgICBwcmludCgiPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09IikKICAgIHByaW50KCIgSi5BLlIuVi5JLlMuIC8vIExJVkUgSE9NRSBXSS1GSSBBR0VOVCBTVEFSVElORy4uLiIpCiAgICBwcmludCgiPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09IikKICAgIGVuZ2luZSA9IExpdmVIb21lR2F0ZXdheUVuZ2luZShkbnNfcG9ydD1hcmdzLmRuc19wb3J0KQogICAgcHJpbnQoZiIgWytdIERldGVjdGVkIExvY2FsIElQICAgICA6IHtlbmdpbmUubG9jYWxfaXB9IikKICAgIHByaW50KGYiIFsrXSBTY2FubmluZyBIb21lIFN1Ym5ldCAgOiB7ZW5naW5lLnN1Ym5ldF9wcmVmaXh9LjAvMjQiKQogICAgcHJpbnQoZiIgWytdIERpc2NvdmVyZWQgV2ktRmkgTm9kZXM6IHtsZW4oZW5naW5lLmRldmljZXMpfSByZWFsIGRldmljZXMiKQogICAgZm9yIGQgaW4gZW5naW5lLmRldmljZXM6CiAgICAgICAgc3RhdHVzID0gIlRSVVNURUQiIGlmIGRbInRydXN0ZWQiXSBlbHNlICJVTlJFQ09HTklaRUQiCiAgICAgICAgcHJpbnQoZiIgICAgIC0ge2RbJ2lwJ106MTVzfSB8IHtkWydtYWMnXToxN3N9IHwge2RbJ25hbWUnXX0gW3tzdGF0dXN9XSIpCiAgICBwcmludChmIiBbK10gTG9jYWwgVGVsZW1ldHJ5IEFQSSAgIDogaHR0cDovL2xvY2FsaG9zdDp7YXJncy5wb3J0fS9hcGkvbGl2ZSIpCiAgICBwcmludChmIiBbK10gRE5TIFNpbmtob2xlIExpc3RlbmVyIDogVURQIHBvcnQge2FyZ3MuZG5zX3BvcnR9IikKICAgIHByaW50KCI9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0iKQogICAgcHJpbnQoIiBPcGVuIGh0dHBzOi8vY2x2bmN4MS13ZWIuZ2l0aHViLmlvL25ldHB1bHNlLyBpbiB5b3VyIGJyb3dzZXIg4oCUIikKICAgIHByaW50KCIgaXQgd2lsbCBhdXRvbWF0aWNhbGx5IGNvbm5lY3QgdG8gdGhpcyBsaXZlIGFnZW50ISIpCgogICAgc2VydmVyID0gVGhyZWFkaW5nSFRUUFNlcnZlcigoIjAuMC4wLjAiLCBhcmdzLnBvcnQpLCBBZ2VudEhUVFBIYW5kbGVyKQogICAgdHJ5OgogICAgICAgIHNlcnZlci5zZXJ2ZV9mb3JldmVyKCkKICAgIGV4Y2VwdCBLZXlib2FyZEludGVycnVwdDoKICAgICAgICBwcmludCgiXG5TaHV0dGluZyBkb3duIEouQS5SLlYuSS5TLiBIb21lIFdpLUZpIEFnZW50LiIpCgoKaWYgX19uYW1lX18gPT0gIl9fbWFpbl9fIjoKICAgIG1haW4oKQo=";
+    let liveAgentConnected = false;
+    let liveAgentUrl = 'http://localhost:8080';
+
+    function toggleAgentDrawer() {
+      const dr = document.getElementById('liveAgentDrawer');
+      dr.classList.toggle('hidden');
+    }
+
+    function downloadWindowsAgentScript() {
+      if (window.EMBEDDED_WIN_AGENT_B64) {
+        const decoded = atob(window.EMBEDDED_WIN_AGENT_B64);
+        triggerFileDownload('jarvis_home_agent.ps1', decoded);
+      }
+    }
+
+    async function downloadHomeAgentScript() {
+      try {
+        const res = await fetch(liveAgentUrl + '/jarvis_home_agent.py');
+        if (res.ok) {
+          const text = await res.text();
+          triggerFileDownload('jarvis_home_agent.py', text);
+          return;
+        }
+      } catch (_) {}
+      if (window.EMBEDDED_AGENT_B64) {
+        const decoded = atob(window.EMBEDDED_AGENT_B64);
+        triggerFileDownload('jarvis_home_agent.py', decoded);
+      }
+    }
+
+    function triggerFileDownload(filename, content) {
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    async function connectLiveHomeAgent(manual = false) {
+      const inp = document.getElementById('agentUrlInput');
+      if (inp && inp.value.trim()) {
+        liveAgentUrl = inp.value.trim().replace(/\/+$/, '');
+      }
+      const statusEl = document.getElementById('agentConnStatus');
+      const badgeEl = document.getElementById('agentModeBadge');
+      try {
+        const res = await fetch(liveAgentUrl + '/api/live', { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        liveAgentConnected = true;
+
+        if (badgeEl) {
+          badgeEl.textContent = `🟢 Live Home Wi-Fi Connected (${data.subnet || data.gatewayIp || 'Local LAN'})`;
+          badgeEl.style.background = 'var(--green-bg)';
+          badgeEl.style.borderColor = 'rgba(69,163,130,0.45)';
+          badgeEl.style.color = 'var(--green)';
+        }
+        if (statusEl) {
+          statusEl.innerHTML = `<strong style="color:var(--green)">✓ Connected to Live Agent (${liveAgentUrl})</strong> — showing real devices on your network.`;
+        }
+
+        if (typeof data.liveDownloadMbps === 'number') {
+          const curDown = data.liveDownloadMbps;
+          const curUp = Number(data.liveUploadMbps || 0);
+          document.getElementById('kpiDown').textContent = curDown.toFixed(1);
+          document.getElementById('kpiUp').textContent = curUp.toFixed(1);
+          const capPct = Math.min(100, Math.round((curDown / 500) * 100));
+          document.getElementById('capacityLabel').textContent = capPct + '% of plan';
+          document.getElementById('capacityBar').style.width = capPct + '%';
+          if (typeof data.totalDataGB === 'number') {
+            document.getElementById('kpiTotalToday').textContent = data.totalDataGB.toFixed(1) + ' GB';
+          }
+        }
+        if (Array.isArray(data.downloadSeries) && data.downloadSeries.length > 0) {
+          downSeries.length = 0;
+          data.downloadSeries.forEach(v => downSeries.push(Number(v || 0)));
+        }
+        if (Array.isArray(data.uploadSeries) && data.uploadSeries.length > 0) {
+          upSeries.length = 0;
+          data.uploadSeries.forEach(v => upSeries.push(Number(v || 0)));
+        }
+
+        if (Array.isArray(data.devices) && data.devices.length > 0) {
+          devices.length = 0;
+          data.devices.forEach((d, idx) => {
+            devices.push({
+              id: d.id || ('live-' + idx),
+              name: d.name || d.ip,
+              type: d.type || d.vendor || 'Wi-Fi Device',
+              connection: d.connection || d.band || 'Home Wi-Fi / LAN',
+              liveMbps: Number(d.liveMbps || 0),
+              todayGB: Number(d.todayGB || d.totalGB || 0.1),
+              ip: d.ip || '192.168.1.x',
+              mac: d.mac || 'UNKNOWN',
+              trusted: d.trusted !== undefined ? d.trusted : true,
+              blocked: !!d.blocked
+            });
+          });
+          document.getElementById('plainSummary').textContent =
+            `${devices.length} real devices detected on your home Wi-Fi (${data.subnet || 'Local LAN'})`;
+          updateSecurityBanner();
+          renderDevices();
+          renderApps();
+          drawChart();
+        }
+      } catch (_) {
+        if (manual && statusEl) {
+          statusEl.innerHTML = `<span style="color:var(--amber)">Could not reach ${liveAgentUrl} yet. Make sure the agent script is running in PowerShell or Terminal.</span>`;
+        }
+      }
+    }
+
     // --- LIVE UPDATE TICK ---
     setInterval(() => {
       if (!liveRunning) return;
+      connectLiveHomeAgent(false);
+      if (liveAgentConnected) return;
+
       let sumDown = 0;
       apps.forEach(a => {
-        if (appLocks[a.id]) { a.liveMbps = 0; return; }
+        const hostDev = devices.find(d => d.name === a.device);
+        if (appLocks[a.id] || (hostDev && hostDev.blocked)) {
+          a.liveMbps = 0;
+          return;
+        }
         a.liveMbps = Math.max(0.4, a.liveMbps + (Math.random() - 0.48) * 2.8);
         a.todayGB += (a.liveMbps / 8000) * 0.4;
         sumDown += a.liveMbps;
+      });
+
+      devices.forEach(d => {
+        if (d.blocked) {
+          d.liveMbps = 0;
+        } else {
+          d.liveMbps = Math.max(0.3, d.liveMbps + (Math.random() - 0.48) * 1.8);
+        }
       });
 
       const curDown = Math.max(12, sumDown + Math.random() * 8);
@@ -1046,27 +1449,22 @@
       document.getElementById('kpiBlocked').textContent = totalBlocked.toLocaleString();
       document.getElementById('kpiBlockedPct').textContent = ((totalBlocked / totalRequests) * 100).toFixed(1) + '%';
 
-      const top = [...apps].sort((a, b) => b.todayGB - a.todayGB)[0];
-      if (top) {
-        document.getElementById('kpiTopApp').textContent = `${top.name} (${top.activity.split(' ')[0]})`;
-        document.getElementById('kpiTopDevice').textContent = top.device;
-        document.getElementById('kpiTopGB').textContent = top.todayGB.toFixed(1) + ' GB';
-        document.getElementById('kpiTopPct').textContent = Math.round((top.todayGB / totalTodayGB) * 100) + '%';
-      }
-
       if (activeTab === 'apps') {
         renderApps();
+        renderDevices();
         drawChart();
       }
-    }, 1400);
+    }, 1500);
 
     window.addEventListener('resize', drawChart);
 
+    updateSecurityBanner();
     renderApps();
     renderDevices();
     renderMessages();
     renderBlocker();
     renderSpeedHistory();
+    connectLiveHomeAgent(false);
     setTimeout(drawChart, 60);
   </script>
 </body>
