@@ -3,658 +3,489 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="J.A.R.V.I.S. // NetPulse MK-IV — Whole-Home Network Gateway, Built-in DNS Sinkhole, Per-App DPI Bandwidth Matrix, and WAN Speed Test HUD." />
-  <title>J.A.R.V.I.S. // NetPulse Tactical Home Network &amp; DNS Sinkhole HUD</title>
+  <title>J.A.R.V.I.S. — Home Wi-Fi &amp; Network Monitor</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <style>
     :root {
-      /* Low-glare, matte futuristic J.A.R.V.I.S. tactical palette (easy on the eyes, no harsh neon) */
-      --hud-bg: #070b10;
-      --hud-panel: #0b1118;
-      --hud-panel-alt: #0f1721;
-      --hud-border: rgba(68, 134, 164, 0.22);
-      --hud-border-strong: rgba(78, 154, 188, 0.42);
-      --hud-cyan: #469ab8;
-      --hud-cyan-soft: rgba(70, 154, 184, 0.14);
-      --hud-amber: #c48b3b;
-      --hud-amber-soft: rgba(196, 139, 59, 0.14);
-      --hud-emerald: #3d997a;
-      --hud-emerald-soft: rgba(61, 153, 122, 0.14);
-      --hud-crimson: #b85252;
-      --hud-crimson-soft: rgba(184, 82, 82, 0.15);
-      --hud-text: #d5e1ec;
-      --hud-muted: #6e8499;
-      --hud-dim: #445668;
+      --bg: #080c12;
+      --surface: #0d131c;
+      --surface-2: #121a26;
+      --border: rgba(88, 148, 178, 0.22);
+      --border-hi: rgba(96, 168, 202, 0.44);
+      --cyan: #54a8c7;
+      --cyan-bg: rgba(84, 168, 199, 0.14);
+      --amber: #cc9444;
+      --amber-bg: rgba(204, 148, 68, 0.14);
+      --green: #45a382;
+      --green-bg: rgba(69, 163, 130, 0.14);
+      --red: #c45c5c;
+      --red-bg: rgba(196, 92, 92, 0.16);
+      --text: #dde7f0;
+      --muted: #8297ab;
     }
 
     * { box-sizing: border-box; }
     body {
-      background-color: var(--hud-bg);
-      color: var(--hud-text);
+      background-color: var(--bg);
+      color: var(--text);
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       margin: 0;
-      padding: 16px 20px 36px;
+      padding: 18px 20px 36px;
       -webkit-font-smoothing: antialiased;
     }
 
-    .app-container {
-      max-width: 1420px;
-      margin: 0 auto;
-    }
-
+    .shell { max-width: 1280px; margin: 0 auto; }
     .tabular-nums { font-variant-numeric: tabular-nums; }
 
-    /* Tactical HUD panel with subtle chamfered corner brackets */
-    .hud-card {
+    .panel {
       position: relative;
-      background: linear-gradient(180deg, rgba(15, 23, 33, 0.92) 0%, rgba(11, 17, 24, 0.96) 100%);
-      border: 1px solid var(--hud-border);
-      border-radius: 6px;
+      background: linear-gradient(180deg, rgba(18, 26, 38, 0.92) 0%, rgba(13, 19, 28, 0.96) 100%);
+      border: 1px solid var(--border);
+      border-radius: 8px;
     }
-    .hud-card::before,
-    .hud-card::after {
+    .panel::before,
+    .panel::after {
       content: "";
       position: absolute;
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       pointer-events: none;
-      border-color: var(--hud-border-strong);
+      border-color: var(--border-hi);
       border-style: solid;
     }
-    .hud-card::before {
-      top: -1px;
-      left: -1px;
-      border-width: 1.5px 0 0 1.5px;
-      border-top-left-radius: 6px;
-    }
-    .hud-card::after {
-      bottom: -1px;
-      right: -1px;
-      border-width: 0 1.5px 1.5px 0;
-      border-bottom-right-radius: 6px;
+    .panel::before { top: -1px; left: -1px; border-width: 1.5px 0 0 1.5px; border-top-left-radius: 8px; }
+    .panel::after { bottom: -1px; right: -1px; border-width: 0 1.5px 1.5px 0; border-bottom-right-radius: 8px; }
+
+    .subpanel {
+      background: rgba(8, 12, 18, 0.62);
+      border: 1px solid rgba(88, 148, 178, 0.16);
+      border-radius: 6px;
     }
 
-    .hud-subcard {
-      background: rgba(7, 11, 16, 0.65);
-      border: 1px solid rgba(68, 134, 164, 0.16);
-      border-radius: 5px;
-    }
-
-    .hud-btn {
-      background: var(--hud-panel-alt);
-      border: 1px solid var(--hud-border-strong);
-      color: var(--hud-text);
-      border-radius: 4px;
+    .btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border-hi);
+      color: var(--text);
+      border-radius: 6px;
       transition: all 0.15s ease;
       cursor: pointer;
     }
-    .hud-btn:hover {
-      background: var(--hud-cyan-soft);
-      border-color: var(--hud-cyan);
-    }
+    .btn:hover { background: var(--cyan-bg); border-color: var(--cyan); }
 
-    .hud-btn-primary {
-      background: rgba(70, 154, 184, 0.22);
-      border: 1px solid var(--hud-cyan);
-      color: #e4f1f8;
-      border-radius: 4px;
+    .btn-primary {
+      background: rgba(84, 168, 199, 0.22);
+      border: 1px solid var(--cyan);
+      color: #ebf5fa;
+      border-radius: 6px;
       transition: all 0.15s ease;
       cursor: pointer;
     }
-    .hud-btn-primary:hover {
-      background: rgba(70, 154, 184, 0.34);
+    .btn-primary:hover { background: rgba(84, 168, 199, 0.34); }
+
+    .toggle-track {
+      width: 40px;
+      height: 22px;
+      border-radius: 999px;
+      position: relative;
+      transition: background 0.18s ease;
+      flex-shrink: 0;
+    }
+    .toggle-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #e8f1f8;
+      position: absolute;
+      top: 3px;
+      transition: left 0.18s ease;
     }
 
-    .hud-btn-amber {
-      background: var(--hud-amber-soft);
-      border: 1px solid var(--hud-amber);
-      color: #ebd6b5;
-      border-radius: 4px;
-      transition: all 0.15s ease;
-      cursor: pointer;
-    }
-    .hud-btn-amber:hover {
-      background: rgba(196, 139, 59, 0.26);
-    }
+    @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .arc-spin { animation: spin-slow 28s linear infinite; transform-origin: center; }
 
-    @keyframes slow-spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    @keyframes reverse-spin {
-      from { transform: rotate(360deg); }
-      to { transform: rotate(0deg); }
-    }
-    .arc-ring-1 { animation: slow-spin 28s linear infinite; transform-origin: center; }
-    .arc-ring-2 { animation: reverse-spin 19s linear infinite; transform-origin: center; }
-
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(70, 154, 184, 0.28); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { background: rgba(84, 168, 199, 0.26); border-radius: 3px; }
   </style>
 </head>
 <body class="select-none">
-  <div class="app-container">
+  <div class="shell">
 
-    <!-- TOP J.A.R.V.I.S. TACTICAL TELEMETRY HEADER -->
-    <header class="hud-card p-3.5 mb-4 flex flex-wrap items-center justify-between gap-4">
+    <!-- HEADER: CLEAR STATUS + QUICK ACTIONS -->
+    <header class="panel p-4 mb-4 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3.5">
-        <!-- Mini Arc-Reactor SVG Emblem -->
-        <div class="w-11 h-11 rounded-full flex items-center justify-center relative" style="background: rgba(7,11,16,0.85); border: 1px solid var(--hud-border-strong);">
+        <!-- Mini J.A.R.V.I.S. Core Status Ring -->
+        <div class="w-11 h-11 rounded-full flex items-center justify-center shrink-0" style="background: rgba(8,12,18,0.85); border: 1px solid var(--border-hi);">
           <svg viewBox="0 0 64 64" class="w-9 h-9">
-            <circle cx="32" cy="32" r="27" fill="none" stroke="#469ab8" stroke-width="1.5" stroke-dasharray="10 6" class="arc-ring-1" opacity="0.75"/>
-            <circle cx="32" cy="32" r="20" fill="none" stroke="#c48b3b" stroke-width="1.5" stroke-dasharray="16 8" class="arc-ring-2" opacity="0.7"/>
-            <circle cx="32" cy="32" r="11" fill="rgba(70, 154, 184, 0.18)" stroke="#469ab8" stroke-width="1.5"/>
-            <circle cx="32" cy="32" r="4" fill="#469ab8"/>
+            <circle cx="32" cy="32" r="26" fill="none" stroke="#54a8c7" stroke-width="1.6" stroke-dasharray="12 6" class="arc-spin" opacity="0.75"/>
+            <circle cx="32" cy="32" r="14" fill="rgba(84,168,199,0.16)" stroke="#54a8c7" stroke-width="1.5"/>
+            <circle cx="32" cy="32" r="4.5" fill="#45a382"/>
           </svg>
         </div>
 
         <div>
           <div class="flex items-center gap-2.5 flex-wrap">
-            <span class="font-mono text-xs tracking-widest uppercase px-1.5 py-0.5 rounded" style="background: var(--hud-cyan-soft); color: var(--hud-cyan); border: 1px solid var(--hud-border-strong);">
-              J.A.R.V.I.S. // NETPULSE MK-IV
-            </span>
-            <h1 class="text-base font-semibold tracking-tight m-0" style="color: var(--hud-text);">
-              Whole-Home Gateway &amp; DNS Sinkhole Matrix
-            </h1>
-            <span id="captureBadge" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono" style="background: var(--hud-emerald-soft); color: var(--hud-emerald); border: 1px solid rgba(61,153,122,0.35);">
-              <span class="w-1.5 h-1.5 rounded-full" style="background: var(--hud-emerald);"></span>
-              <span id="captureStatusText">GATEWAY ONLINE · DNS :53/UDP ACTIVE</span>
+            <h1 class="text-base font-semibold tracking-tight m-0">J.A.R.V.I.S. Home Network</h1>
+            <span id="healthBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium" style="background: var(--green-bg); color: var(--green); border: 1px solid rgba(69,163,130,0.35);">
+              <span class="w-1.5 h-1.5 rounded-full" style="background: var(--green);"></span>
+              <span id="healthText">Wi-Fi Healthy · Plenty of Speed Available</span>
             </span>
           </div>
-          <!-- Live J.A.R.V.I.S. Advisory Ticker -->
-          <div class="text-xs font-mono mt-1 flex items-center gap-2" style="color: var(--hud-muted);">
-            <span style="color: var(--hud-amber);">[SYS.ADVISORY]</span>
-            <span id="jarvisTicker" class="truncate">Intercepted &amp; sinkholed ads.roku.com (0.0.0.0) from Living Room Apple TV · 0.1 ms latency</span>
-          </div>
+          <p id="plainSummary" class="text-xs m-0 mt-1" style="color: var(--muted);">
+            7 devices online · Top activity: Living Room Apple TV streaming Netflix · Ad Blocker active
+          </p>
         </div>
       </div>
 
       <div class="flex items-center gap-2 flex-wrap">
-        <button id="togglePauseBtn" onclick="toggleCapture()" class="hud-btn px-3 py-1.5 text-xs font-mono">
-          PAUSE TELEMETRY
+        <button id="pauseBtn" onclick="toggleLive()" class="btn px-3 py-1.5 text-xs font-medium">
+          Pause Live Feed
         </button>
-        <button onclick="switchTab('dns')" class="hud-btn-amber px-3 py-1.5 text-xs font-mono">
-          🛡 DNS SINKHOLE SHIELD
-        </button>
-        <button onclick="switchTab('speedtest'); startSpeedTest();" class="hud-btn-primary px-3 py-1.5 text-xs font-mono">
-          ⚡ DIAGNOSTIC SPEED TEST
+        <button onclick="switchTab('speedtest'); startSpeedTest();" class="btn-primary px-3.5 py-1.5 text-xs font-medium">
+          ⚡ Run Speed Test
         </button>
       </div>
     </header>
 
-    <!-- 5-PANEL TACTICAL HUD KPI STRIP (WITH ARC REACTOR DIAL) -->
-    <section class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
-      <!-- Panel 1: Arc Reactor System Load & Shield Core -->
-      <div class="hud-card p-3 flex items-center gap-3 col-span-2 lg:col-span-1">
-        <div class="w-14 h-14 shrink-0 relative flex items-center justify-center">
-          <svg viewBox="0 0 80 80" class="w-14 h-14">
-            <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(70,154,184,0.18)" stroke-width="5"/>
-            <circle id="reactorArc" cx="40" cy="40" r="34" fill="none" stroke="#469ab8" stroke-width="5" stroke-dasharray="150 214" stroke-linecap="round" transform="rotate(-90 40 40)"/>
-            <circle cx="40" cy="40" r="24" fill="none" stroke="rgba(196,139,59,0.35)" stroke-width="1.5" stroke-dasharray="6 4" class="arc-ring-1"/>
-          </svg>
-          <span id="reactorPct" class="absolute font-mono text-xs font-semibold" style="color: var(--hud-cyan);">29%</span>
+    <!-- 4 HUMAN-READABLE SUMMARY CARDS -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+      <!-- Card 1: Current Speed & Capacity -->
+      <div class="panel p-4">
+        <div class="flex items-center justify-between text-xs mb-1" style="color: var(--muted);">
+          <span>Internet Usage Right Now</span>
+          <span id="capacityLabel" class="font-medium" style="color: var(--green);">28% of plan</span>
         </div>
-        <div class="min-w-0">
-          <div class="text-xs font-mono uppercase tracking-wider" style="color: var(--hud-muted);">WAN CAPACITY</div>
-          <div class="text-sm font-semibold font-mono truncate" style="color: var(--hud-text);">NOMINAL LOAD</div>
-          <div class="text-xs font-mono mt-0.5" style="color: var(--hud-emerald);">QoS Queue: A+</div>
+        <div class="flex items-baseline gap-2">
+          <span id="kpiDown" class="text-2xl font-semibold tabular-nums" style="color: var(--cyan);">142.8</span>
+          <span class="text-xs" style="color: var(--muted);">Mbps down</span>
+          <span class="text-xs ml-auto tabular-nums" style="color: var(--green);">↑ <span id="kpiUp">28.4</span> Mbps up</span>
         </div>
-      </div>
-
-      <!-- Panel 2: Live Downlink -->
-      <div class="hud-card p-3">
-        <div class="flex items-center justify-between text-xs font-mono mb-1" style="color: var(--hud-muted);">
-          <span>DOWNLINK // RX</span>
-          <span style="color: var(--hud-cyan);">▼ WAN0</span>
+        <div class="w-full h-1.5 rounded-full overflow-hidden mt-2.5" style="background: var(--bg);">
+          <div id="capacityBar" class="h-full transition-all duration-300" style="width: 28%; background: var(--cyan);"></div>
         </div>
-        <div class="flex items-baseline gap-1.5">
-          <span id="kpiDownload" class="text-2xl font-semibold font-mono tabular-nums">142.8</span>
-          <span class="text-xs font-mono" style="color: var(--hud-muted);">Mbps</span>
-        </div>
-        <div class="text-xs font-mono mt-1 flex items-center justify-between" style="color: var(--hud-muted);">
-          <span>PEAK: <strong id="kpiPeakDown" style="color: var(--hud-text);">318.4M</strong></span>
-          <span id="kpiPacketsSec">14.2k pkt/s</span>
+        <div class="text-xs mt-1.5" style="color: var(--muted);">
+          Out of 500 Mbps home plan · <span id="kpiTotalToday" style="color: var(--text);">68.4 GB</span> used today
         </div>
       </div>
 
-      <!-- Panel 3: Live Uplink -->
-      <div class="hud-card p-3">
-        <div class="flex items-center justify-between text-xs font-mono mb-1" style="color: var(--hud-muted);">
-          <span>UPLINK // TX</span>
-          <span style="color: var(--hud-emerald);">▲ WAN0</span>
+      <!-- Card 2: Biggest Data User -->
+      <div class="panel p-4 cursor-pointer" onclick="switchTab('apps')">
+        <div class="flex items-center justify-between text-xs mb-1" style="color: var(--muted);">
+          <span>Top Data User Today</span>
+          <span style="color: var(--cyan);">View all →</span>
         </div>
-        <div class="flex items-baseline gap-1.5">
-          <span id="kpiUpload" class="text-2xl font-semibold font-mono tabular-nums">28.4</span>
-          <span class="text-xs font-mono" style="color: var(--hud-muted);">Mbps</span>
+        <div id="kpiTopApp" class="text-lg font-semibold truncate">Netflix (4K Video)</div>
+        <div class="text-xs mt-1 flex items-center justify-between" style="color: var(--muted);">
+          <span id="kpiTopDevice">Living Room Apple TV</span>
+          <strong id="kpiTopGB" class="tabular-nums" style="color: var(--text);">24.8 GB</strong>
         </div>
-        <div class="text-xs font-mono mt-1 flex items-center justify-between" style="color: var(--hud-muted);">
-          <span>24H: <strong id="kpiTotalData" style="color: var(--hud-text);">68.42 GB</strong></span>
-          <span style="color: var(--hud-emerald);">RTT 9.1 ms</span>
-        </div>
-      </div>
-
-      <!-- Panel 4: DNS Sinkhole Intercepts -->
-      <div class="hud-card p-3 cursor-pointer" onclick="switchTab('dns')">
-        <div class="flex items-center justify-between text-xs font-mono mb-1" style="color: var(--hud-muted);">
-          <span>DNS SINKHOLE</span>
-          <span id="kpiSinkholeState" style="color: var(--hud-amber);">SHIELD ON</span>
-        </div>
-        <div class="flex items-baseline gap-1.5">
-          <span id="kpiBlockedDns" class="text-2xl font-semibold font-mono tabular-nums" style="color: var(--hud-amber);">3,371</span>
-          <span id="kpiBlockedPct" class="text-xs font-mono" style="color: var(--hud-muted);">(22.6%)</span>
-        </div>
-        <div class="text-xs font-mono mt-1 flex items-center justify-between" style="color: var(--hud-muted);">
-          <span>QUERIES: <strong id="kpiTotalDns" style="color: var(--hud-text);">14,890</strong></span>
-          <span>0.0.0.0</span>
+        <div class="text-xs mt-2" style="color: var(--muted);">
+          Using <span id="kpiTopPct" style="color: var(--cyan);">36%</span> of all home Wi-Fi data today
         </div>
       </div>
 
-      <!-- Panel 5: Packet & SNI Message Stream -->
-      <div class="hud-card p-3 cursor-pointer" onclick="switchTab('messages')">
-        <div class="flex items-center justify-between text-xs font-mono mb-1" style="color: var(--hud-muted);">
-          <span>PACKET // SNI LOG</span>
-          <span style="color: var(--hud-cyan);">L2–L7</span>
+      <!-- Card 3: Ad Blocker & Protection -->
+      <div class="panel p-4 cursor-pointer" onclick="switchTab('blocker')">
+        <div class="flex items-center justify-between text-xs mb-1" style="color: var(--muted);">
+          <span>Ads &amp; Trackers Blocked</span>
+          <span id="kpiShieldBadge" class="font-medium" style="color: var(--green);">Protection ON</span>
         </div>
-        <div class="flex items-baseline gap-1.5">
-          <span id="kpiMsgCount" class="text-2xl font-semibold font-mono tabular-nums">1,482</span>
-          <span class="text-xs font-mono" style="color: var(--hud-muted);">frames</span>
+        <div class="flex items-baseline gap-2">
+          <span id="kpiBlocked" class="text-2xl font-semibold tabular-nums" style="color: var(--amber);">3,371</span>
+          <span class="text-xs" style="color: var(--muted);">blocked today</span>
         </div>
-        <div class="text-xs font-mono mt-1 flex items-center justify-between" style="color: var(--hud-muted);">
-          <span>CLEARTEXT: <strong id="kpiCleartextCount" style="color: var(--hud-amber);">312</strong></span>
-          <span>7 NODES</span>
+        <div class="text-xs mt-2" style="color: var(--muted);">
+          <span id="kpiBlockedPct" style="color: var(--text);">22.6%</span> of background requests were ads or TV spying
+        </div>
+      </div>
+
+      <!-- Card 4: Devices & Messages -->
+      <div class="panel p-4 cursor-pointer" onclick="switchTab('messages')">
+        <div class="flex items-center justify-between text-xs mb-1" style="color: var(--muted);">
+          <span>Connected Devices</span>
+          <span style="color: var(--cyan);">Activity log →</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-2xl font-semibold tabular-nums">7</span>
+          <span class="text-xs" style="color: var(--muted);">devices on Wi-Fi</span>
+        </div>
+        <div class="text-xs mt-2" style="color: var(--muted);">
+          Last event: <span id="kpiLastEvent" style="color: var(--text);">Thermostat status update</span>
         </div>
       </div>
     </section>
 
-    <!-- TACTICAL HUD NAVIGATION TABS -->
-    <nav class="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 border-b" style="border-color: var(--hud-border);">
-      <button onclick="switchTab('overview')" id="tab-overview" class="px-3.5 py-2 text-xs font-mono uppercase tracking-wider rounded-t transition cursor-pointer" style="background: var(--hud-cyan-soft); color: var(--hud-text); border: 1px solid var(--hud-border-strong); border-bottom: 2px solid var(--hud-cyan);">
-        [01] App Bandwidth &amp; DPI Matrix
+    <!-- SIMPLE 4-TAB NAVIGATION -->
+    <nav class="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 border-b" style="border-color: var(--border);">
+      <button onclick="switchTab('apps')" id="tab-apps" class="px-4 py-2 text-xs font-medium rounded-t cursor-pointer transition" style="background: var(--cyan-bg); color: var(--text); border: 1px solid var(--border-hi); border-bottom: 2px solid var(--cyan);">
+        Apps &amp; Devices
       </button>
-      <button onclick="switchTab('dns')" id="tab-dns" class="px-3.5 py-2 text-xs font-mono uppercase tracking-wider rounded-t transition cursor-pointer" style="background: transparent; color: var(--hud-muted); border: 1px solid transparent;">
-        [02] Whole-Home DNS Sinkhole &amp; App Locks
+      <button onclick="switchTab('messages')" id="tab-messages" class="px-4 py-2 text-xs font-medium rounded-t cursor-pointer transition" style="background: transparent; color: var(--muted); border: 1px solid transparent;">
+        Messages &amp; Activity
       </button>
-      <button onclick="switchTab('messages')" id="tab-messages" class="px-3.5 py-2 text-xs font-mono uppercase tracking-wider rounded-t transition cursor-pointer" style="background: transparent; color: var(--hud-muted); border: 1px solid transparent;">
-        [03] Network Messages &amp; Payload Decoder
+      <button onclick="switchTab('blocker')" id="tab-blocker" class="px-4 py-2 text-xs font-medium rounded-t cursor-pointer transition" style="background: transparent; color: var(--muted); border: 1px solid transparent;">
+        Ad Blocker &amp; App Controls
       </button>
-      <button onclick="switchTab('speedtest')" id="tab-speedtest" class="px-3.5 py-2 text-xs font-mono uppercase tracking-wider rounded-t transition cursor-pointer" style="background: transparent; color: var(--hud-muted); border: 1px solid transparent;">
-        [04] WAN Speed &amp; Bufferbloat Core
-      </button>
-      <button onclick="switchTab('devices')" id="tab-devices" class="px-3.5 py-2 text-xs font-mono uppercase tracking-wider rounded-t transition cursor-pointer" style="background: transparent; color: var(--hud-muted); border: 1px solid transparent;">
-        [05] Subnet Topology &amp; Gateway Setup
+      <button onclick="switchTab('speedtest')" id="tab-speedtest" class="px-4 py-2 text-xs font-medium rounded-t cursor-pointer transition" style="background: transparent; color: var(--muted); border: 1px solid transparent;">
+        Speed Test &amp; Setup
       </button>
     </nav>
 
-    <!-- TAB 01: APP BANDWIDTH & DPI MATRIX -->
-    <div id="panel-overview" class="space-y-4">
-      <div class="hud-card p-4">
+    <!-- =================================================================== -->
+    <!-- TAB 1: APPS & DEVICES (WHO IS USING MY WI-FI?)                      -->
+    <!-- =================================================================== -->
+    <div id="panel-apps" class="space-y-4">
+      <!-- Live Speed Graph -->
+      <div class="panel p-4">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--hud-cyan);">// REAL-TIME SPECTRUM</span>
-              <h2 class="text-sm font-semibold m-0">Whole-Home Wi-Fi Throughput (60s Rolling Horizon)</h2>
-            </div>
-            <p class="text-xs m-0 mt-0.5" style="color: var(--hud-muted);">
-              Combined DPI TLS SNI inspection + Whole-Home DNS Sinkhole attribution across subnet 192.168.1.0/24
-            </p>
+            <h2 class="text-sm font-semibold m-0">Live Home Wi-Fi Speed (Last 60 Seconds)</h2>
+            <p class="text-xs m-0 mt-0.5" style="color: var(--muted);">Shows combined download and upload speed across every device at home</p>
           </div>
-          <div class="flex items-center gap-4 text-xs font-mono">
-            <span class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-sm inline-block" style="background: var(--hud-cyan);"></span> DOWNLINK (Mbps)
-            </span>
-            <span class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-sm inline-block" style="background: var(--hud-emerald);"></span> UPLINK (Mbps)
-            </span>
+          <div class="flex items-center gap-4 text-xs">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm inline-block" style="background: var(--cyan);"></span> Download</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm inline-block" style="background: var(--green);"></span> Upload</span>
           </div>
         </div>
-        <div class="w-full h-44 relative">
+        <div class="w-full h-40">
           <canvas id="trafficCanvas" class="w-full h-full block"></canvas>
         </div>
       </div>
 
-      <div class="hud-card p-4">
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <div>
-            <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--hud-amber);">// L7 APPLICATION ATTRIBUTION</span>
-            <h2 class="text-sm font-semibold m-0">Applications Ranked by Bandwidth &amp; Volume</h2>
-          </div>
-          <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
-            <select id="deviceFilter" onchange="renderApps()" class="px-2.5 py-1.5 rounded text-xs font-mono" style="background: var(--hud-bg); border: 1px solid var(--hud-border-strong); color: var(--hud-text);">
-              <option value="ALL">ALL SUBNET NODES (7)</option>
-              <option value="Living Room Apple TV">Living Room Apple TV (.14)</option>
-              <option value="Alex's MacBook Pro">Alex's MacBook Pro (.22)</option>
-              <option value="PlayStation 5">PlayStation 5 (.30)</option>
-              <option value="iPhone 16 Pro">iPhone 16 Pro (.41)</option>
-              <option value="Work Desktop PC">Work Desktop PC (.55)</option>
-            </select>
-            <select id="categoryFilter" onchange="renderApps()" class="px-2.5 py-1.5 rounded text-xs font-mono" style="background: var(--hud-bg); border: 1px solid var(--hud-border-strong); color: var(--hud-text);">
-              <option value="ALL">ALL PROTOCOLS</option>
-              <option value="Streaming">MEDIA STREAMING</option>
-              <option value="Messaging">ENCRYPTED MESSAGING &amp; VOIP</option>
-              <option value="Gaming">GAMING &amp; CDN</option>
-              <option value="Cloud">CLOUD &amp; DEV</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr class="font-mono uppercase text-[11px]" style="border-bottom: 1px solid var(--hud-border); color: var(--hud-muted);">
-                <th class="py-2 pr-3">Application / Service</th>
-                <th class="py-2 px-3">Class</th>
-                <th class="py-2 px-3">Client Node</th>
-                <th class="py-2 px-3">TLS SNI / DNS Endpoint</th>
-                <th class="py-2 px-3 text-right">Live Telemetry</th>
-                <th class="py-2 px-3 text-right">24H Cumulative</th>
-                <th class="py-2 pl-3 w-36">Subnet Share</th>
-              </tr>
-            </thead>
-            <tbody id="appTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 02: WHOLE-HOME DNS PROXY, SINKHOLE & APP LOCKS -->
-    <div id="panel-dns" class="hidden space-y-4">
+      <!-- Two-column layout: Top Apps + Connected Devices -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div class="lg:col-span-2 hud-card p-4 flex flex-col justify-between">
-          <div>
-            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-              <div>
-                <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--hud-cyan);">// RFC 1035 DNS PROXY &amp; SINKHOLE ENGINE</span>
-                <h2 class="text-sm font-semibold m-0">Interactive Whole-Home DNS Interceptor &amp; Rule Tester</h2>
-              </div>
-              <button id="masterSinkholeBtn" onclick="toggleMasterSinkhole()" class="hud-btn-amber px-3 py-1 text-xs font-mono">
-                SHIELD: ACTIVE (0.0.0.0)
-              </button>
-            </div>
-            <p class="text-xs m-0 mb-3" style="color: var(--hud-muted);">
-              Test how any Wi-Fi device's DNS lookup is evaluated by J.A.R.V.I.S. Blocked ad/telemetry domains and locked apps are sinkholed to <code class="font-mono" style="color: var(--hud-amber);">0.0.0.0</code> in 0.1 ms; allowed domains resolve via upstream <code class="font-mono" style="color: var(--hud-cyan);">1.1.1.1</code> and attribute app usage to that device.
-            </p>
-
-            <div class="flex flex-wrap items-center gap-2 mb-3">
-              <select id="dnsTestClient" class="px-2.5 py-1.5 rounded text-xs font-mono" style="background: var(--hud-bg); border: 1px solid var(--hud-border-strong); color: var(--hud-text);">
-                <option value="192.168.1.41">iPhone 16 Pro (192.168.1.41)</option>
-                <option value="192.168.1.14">Living Room Apple TV (192.168.1.14)</option>
-                <option value="192.168.1.22">Alex's MacBook Pro (192.168.1.22)</option>
-                <option value="192.168.1.30">PlayStation 5 (192.168.1.30)</option>
-                <option value="192.168.1.55">Work Desktop PC (192.168.1.55)</option>
-              </select>
-              <input id="dnsTestDomain" type="text" value="ads.roku.com" placeholder="Enter domain to query (e.g. ads.roku.com)..." class="flex-1 min-w-[180px] px-3 py-1.5 rounded text-xs font-mono" style="background: var(--hud-bg); border: 1px solid var(--hud-border-strong); color: var(--hud-text);" />
-              <button onclick="runDnsTestQuery()" class="hud-btn-primary px-3.5 py-1.5 text-xs font-mono">
-                ▶ TEST DNS LOOKUP
-              </button>
-            </div>
-
-            <div class="flex items-center gap-1.5 flex-wrap text-xs font-mono mb-3">
-              <span style="color: var(--hud-muted);">Presets:</span>
-              <button onclick="quickDnsTest('ads.roku.com')" class="hud-btn px-2 py-0.5 text-[11px]">ads.roku.com</button>
-              <button onclick="quickDnsTest('doubleclick.net')" class="hud-btn px-2 py-0.5 text-[11px]">doubleclick.net</button>
-              <button onclick="quickDnsTest('v10.events.data.microsoft.com')" class="hud-btn px-2 py-0.5 text-[11px]">v10.events.data.microsoft.com</button>
-              <button onclick="quickDnsTest('api.tiktokv.com')" class="hud-btn px-2 py-0.5 text-[11px]">api.tiktokv.com</button>
-              <button onclick="quickDnsTest('ipv4-c001.1.oca.nflxvideo.net')" class="hud-btn px-2 py-0.5 text-[11px]">nflxvideo.net</button>
-              <button onclick="quickDnsTest('gateway.discord.gg')" class="hud-btn px-2 py-0.5 text-[11px]">gateway.discord.gg</button>
-            </div>
-          </div>
-
-          <div id="dnsTestResultBox" class="hud-subcard p-3 font-mono text-xs flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <span style="color: var(--hud-amber);">[SINKHOLED]</span>
-              <strong class="ml-1" style="color: var(--hud-text);">ads.roku.com</strong>
-              <span style="color: var(--hud-muted);">from Living Room Apple TV (192.168.1.14)</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <span style="color: var(--hud-muted);">Rule: Smart TV ACR &amp; Telemetry</span>
-              <span class="px-2 py-0.5 rounded" style="background: var(--hud-crimson-soft); color: #e28787;">→ 0.0.0.0 (0.1 ms)</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="hud-card p-4">
-          <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--hud-amber);">// WHOLE-HOME PARENTAL &amp; FOCUS CONTROL</span>
-          <h3 class="text-sm font-semibold m-0 mb-1">Instant App Sinkhole Locks</h3>
-          <p class="text-xs m-0 mb-3" style="color: var(--hud-muted);">
-            Locking an app instructs the DNS gateway to sinkhole all CDN &amp; API domains for that application across every device on your Wi-Fi.
-          </p>
-          <div id="appLocksContainer" class="space-y-2"></div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div class="lg:col-span-2 hud-card p-4">
-          <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--hud-cyan);">// AUTONOMOUS THREAT &amp; TELEMETRY SHIELDS</span>
-          <h3 class="text-sm font-semibold m-0 mb-3">Active Sinkhole Filter Categories</h3>
-          <div id="dnsPoliciesGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
-        </div>
-
-        <div class="hud-card p-4 flex flex-col justify-between">
-          <div>
-            <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--hud-amber);">// CUSTOM DENYLIST</span>
-            <h3 class="text-sm font-semibold m-0 mb-2">Custom Sinkholed Domains</h3>
-            <div class="flex items-center gap-1.5 mb-2.5">
-              <input id="customDomainInput" type="text" placeholder="e.g. telemetry.sonos.com" class="flex-1 px-2.5 py-1.5 rounded text-xs font-mono" style="background: var(--hud-bg); border: 1px solid var(--hud-border-strong); color: var(--hud-text);" />
-              <button onclick="addCustomSinkholeDomain()" class="hud-btn-amber px-2.5 py-1.5 text-xs font-mono">+ BLOCK</button>
-            </div>
-            <div id="customBlocklistTags" class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto"></div>
-          </div>
-          <div class="text-[11px] font-mono pt-2 mt-2 border-t" style="border-color: var(--hud-border); color: var(--hud-muted);">
-            Wildcard subdomains (*.domain) are automatically sinkholed.
-          </div>
-        </div>
-      </div>
-
-      <div class="hud-card p-4">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <div>
-            <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--hud-cyan);">// LIVE WHOLE-HOME DNS INTERCEPT STREAM</span>
-            <h3 class="text-sm font-semibold m-0">Real-Time Subnet DNS Queries &amp; App Attribution Log</h3>
-          </div>
-          <div class="flex items-center gap-1.5 font-mono text-xs">
-            <button onclick="setDnsFilter('ALL')" id="dnsf-ALL" class="hud-btn-primary px-2.5 py-1 text-xs">ALL QUERIES</button>
-            <button onclick="setDnsFilter('SINKHOLED')" id="dnsf-SINKHOLED" class="hud-btn px-2.5 py-1 text-xs">SINKHOLED ONLY</button>
-            <button onclick="setDnsFilter('ALLOWED')" id="dnsf-ALLOWED" class="hud-btn px-2.5 py-1 text-xs">ALLOWED / CACHED</button>
-          </div>
-        </div>
-
-        <div class="overflow-x-auto max-h-80">
-          <table class="w-full text-left border-collapse text-xs font-mono">
-            <thead class="sticky top-0" style="background: var(--hud-panel); border-bottom: 1px solid var(--hud-border); color: var(--hud-muted);">
-              <tr class="text-[11px] uppercase">
-                <th class="py-2 px-2.5">Timestamp</th>
-                <th class="py-2 px-2.5">Wi-Fi Client Node</th>
-                <th class="py-2 px-2.5">Queried Domain</th>
-                <th class="py-2 px-2.5">Type</th>
-                <th class="py-2 px-2.5">Attributed App</th>
-                <th class="py-2 px-2.5">Verdict / Policy</th>
-                <th class="py-2 px-2.5 text-right">Resolution</th>
-              </tr>
-            </thead>
-            <tbody id="dnsLogTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 03: NETWORK MESSAGES & PACKET DECODER -->
-    <div id="panel-messages" class="hidden space-y-4">
-      <div class="hud-card p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div class="space-y-1">
-          <div class="text-xs font-mono uppercase tracking-wider" style="color: var(--hud-amber);">
-            // DEEP PACKET &amp; SNI MESSAGE INSPECTOR (CLEARTEXT vs. TLS 1.3 ENCRYPTED)
-          </div>
-          <p class="text-xs m-0 leading-relaxed" style="color: var(--hud-muted);">
-            Full application message text is decoded for cleartext LAN protocols (<strong style="color: var(--hud-text);">MQTT IoT telemetry, mDNS/Bonjour, SSDP, HTTP, and DNS</strong>). For encrypted chat streams (<strong style="color: var(--hud-text);">WhatsApp, iMessage, Discord, Signal</strong>), J.A.R.V.I.S. extracts the <strong style="color: var(--hud-cyan);">TLS ClientHello SNI hostname, cipher metadata, device IP, and message burst volume</strong>.
-          </p>
-        </div>
-        <button onclick="injectSimulatedMessage()" class="hud-btn-primary px-3 py-1.5 text-xs font-mono shrink-0">
-          + INJECT LAN / CHAT FRAME
-        </button>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div class="lg:col-span-2 hud-card p-4">
+        <!-- Apps Table (2 cols) -->
+        <div class="lg:col-span-2 panel p-4">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <div class="flex items-center gap-1.5 flex-wrap font-mono">
-              <button onclick="setMsgFilter('ALL')" id="msgf-ALL" class="hud-btn-primary px-2.5 py-1 text-xs">ALL FRAMES</button>
-              <button onclick="setMsgFilter('CHAT')" id="msgf-CHAT" class="hud-btn px-2.5 py-1 text-xs">ENCRYPTED CHAT (SNI)</button>
-              <button onclick="setMsgFilter('CLEARTEXT')" id="msgf-CLEARTEXT" class="hud-btn px-2.5 py-1 text-xs">CLEARTEXT PAYLOADS</button>
-              <button onclick="setMsgFilter('DNS')" id="msgf-DNS" class="hud-btn px-2.5 py-1 text-xs">DNS INTERCEPTS</button>
+            <div>
+              <h2 class="text-sm font-semibold m-0">Which Apps Use the Most Data?</h2>
+              <p class="text-xs m-0 mt-0.5" style="color: var(--muted);">Ranked from highest to lowest data usage today. Click Pause to block an app house-wide.</p>
             </div>
-            <input id="msgSearch" oninput="renderMessages()" type="text" placeholder="Search IP, SNI, payload..." class="px-2.5 py-1 rounded text-xs font-mono w-48" style="background: var(--hud-bg); border: 1px solid var(--hud-border-strong); color: var(--hud-text);" />
+            <select id="deviceFilter" onchange="renderApps()" class="px-2.5 py-1.5 rounded text-xs" style="background: var(--bg); border: 1px solid var(--border-hi); color: var(--text);">
+              <option value="ALL">All Devices (7)</option>
+              <option value="Living Room Apple TV">Living Room Apple TV</option>
+              <option value="iPhone 16 Pro">iPhone 16 Pro</option>
+              <option value="PlayStation 5">PlayStation 5</option>
+              <option value="Alex's MacBook Pro">Alex's MacBook Pro</option>
+              <option value="Work Desktop PC">Work Desktop PC</option>
+            </select>
           </div>
 
-          <div class="overflow-y-auto max-h-96 rounded" style="border: 1px solid var(--hud-border);">
-            <table class="w-full text-left border-collapse text-xs font-mono">
-              <thead class="sticky top-0" style="background: var(--hud-panel); border-bottom: 1px solid var(--hud-border); color: var(--hud-muted);">
-                <tr class="text-[11px] uppercase">
-                  <th class="py-2 px-2.5">Time</th>
-                  <th class="py-2 px-2.5">Source Node</th>
-                  <th class="py-2 px-2.5">Protocol</th>
-                  <th class="py-2 px-2.5">Intercept Summary / SNI</th>
-                  <th class="py-2 px-2.5 text-right">Len</th>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border); color: var(--muted);">
+                  <th class="py-2 pr-3 font-medium">App &amp; Activity</th>
+                  <th class="py-2 px-3 font-medium">Device</th>
+                  <th class="py-2 px-3 font-medium text-right">Right Now</th>
+                  <th class="py-2 px-3 font-medium text-right">Used Today</th>
+                  <th class="py-2 pl-3 font-medium text-right">Control</th>
                 </tr>
               </thead>
-              <tbody id="msgTableBody"></tbody>
+              <tbody id="appsTableBody"></tbody>
             </table>
           </div>
         </div>
 
-        <div class="hud-card p-4 flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between pb-2.5 mb-3 border-b" style="border-color: var(--hud-border);">
-              <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--hud-cyan);">// FRAME PAYLOAD DECODER</span>
-              <span id="inspectorEncryptionBadge" class="px-2 py-0.5 rounded text-[11px] font-mono">CLEARTEXT</span>
+        <!-- Connected Devices Sidebar (1 col) -->
+        <div class="panel p-4">
+          <h2 class="text-sm font-semibold m-0 mb-1">Devices on Your Wi-Fi</h2>
+          <p class="text-xs m-0 mb-3" style="color: var(--muted);">Click a device to see only its apps</p>
+          <div id="devicesList" class="space-y-2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- TAB 2: MESSAGES & NETWORK ACTIVITY (PLAIN ENGLISH + OPTIONAL RAW)   -->
+    <!-- =================================================================== -->
+    <div id="panel-messages" class="hidden space-y-4">
+      <div class="panel p-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-semibold m-0">Messages &amp; Network Activity Feed</h2>
+          <p class="text-xs m-0 mt-1" style="color: var(--muted);">
+            <strong style="color: var(--text);">Local Smart-Home &amp; Unencrypted Messages</strong> show full readable text.
+            <strong style="color: var(--text);">Private Chat Apps (WhatsApp, iMessage, Discord)</strong> are encrypted for privacy, so J.A.R.V.I.S. shows who messaged, which app, when, and file size.
+          </p>
+        </div>
+        <button onclick="addSimulatedActivity()" class="btn-primary px-3 py-1.5 text-xs font-medium shrink-0">
+          + Simulate New Message
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <!-- Activity List -->
+        <div class="lg:col-span-2 panel p-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button onclick="setMsgFilter('ALL')" id="mf-ALL" class="btn-primary px-2.5 py-1 text-xs">All Activity</button>
+              <button onclick="setMsgFilter('CHAT')" id="mf-CHAT" class="btn px-2.5 py-1 text-xs">Chat Apps</button>
+              <button onclick="setMsgFilter('LOCAL')" id="mf-LOCAL" class="btn px-2.5 py-1 text-xs">Readable Local Messages</button>
+              <button onclick="setMsgFilter('BLOCKED')" id="mf-BLOCKED" class="btn px-2.5 py-1 text-xs">Blocked Ads</button>
             </div>
-            <div id="inspectorContent" class="space-y-3 text-xs"></div>
+            <input id="msgSearch" oninput="renderMessages()" type="text" placeholder="Search device or app..." class="px-2.5 py-1 rounded text-xs w-44" style="background: var(--bg); border: 1px solid var(--border-hi); color: var(--text);" />
           </div>
-          <div class="pt-3 mt-4 border-t text-xs font-mono flex items-center justify-between" style="border-color: var(--hud-border); color: var(--hud-muted);">
-            <span>Select any packet row to inspect</span>
-            <span>AF_PACKET // SNI</span>
+
+          <div id="messagesList" class="space-y-2 max-h-[420px] overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- Plain-English Message Inspector + Collapsible Technical Details -->
+        <div class="panel p-4 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-2.5 mb-3 border-b" style="border-color: var(--border);">
+              <h3 class="text-sm font-semibold m-0">Event Details</h3>
+              <span id="detailBadge" class="px-2 py-0.5 rounded text-xs font-medium">Readable</span>
+            </div>
+            <div id="detailPlain" class="space-y-3 text-xs"></div>
+
+            <!-- Ops Engineer Technical Drawer Toggle -->
+            <div class="mt-4 pt-3 border-t" style="border-color: var(--border);">
+              <button onclick="toggleTechDetails()" id="techToggleBtn" class="btn w-full py-1.5 text-xs font-medium">
+                Show Technical Details (IP / Headers / Raw Data)
+              </button>
+              <div id="techDetailsBox" class="hidden mt-2.5 space-y-2 text-xs font-mono"></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 04: ON-DEMAND WAN SPEED & BUFFERBLOAT CORE -->
+    <!-- =================================================================== -->
+    <!-- TAB 3: AD BLOCKER & APP CONTROLS (WHOLE-HOME DNS SINKHOLE)          -->
+    <!-- =================================================================== -->
+    <div id="panel-blocker" class="hidden space-y-4">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <!-- Left 2 Cols: Simple Protection Toggles + Website Tester -->
+        <div class="lg:col-span-2 space-y-4">
+          <div class="panel p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <div>
+                <h2 class="text-sm font-semibold m-0">Whole-Home Protection Shields</h2>
+                <p class="text-xs m-0 mt-0.5" style="color: var(--muted);">Blocks unwanted traffic for every phone, laptop, and Smart TV on your Wi-Fi automatically</p>
+              </div>
+              <button id="masterShieldBtn" onclick="toggleMasterShield()" class="btn-primary px-3 py-1.5 text-xs font-medium">
+                Master Shield: ON
+              </button>
+            </div>
+            <div id="shieldsList" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+          </div>
+
+          <!-- Simple Website / App Tester -->
+          <div class="panel p-4">
+            <h3 class="text-sm font-semibold m-0 mb-1">Test if a Website or Tracker is Blocked</h3>
+            <p class="text-xs m-0 mb-3" style="color: var(--muted);">Type any domain (like <code class="font-mono">ads.roku.com</code> or <code class="font-mono">tiktok.com</code>) to see what happens when a device tries to open it.</p>
+
+            <div class="flex flex-wrap items-center gap-2 mb-2.5">
+              <input id="testDomainInput" type="text" value="ads.roku.com" placeholder="Enter website or domain..." class="flex-1 min-w-[200px] px-3 py-1.5 rounded text-xs" style="background: var(--bg); border: 1px solid var(--border-hi); color: var(--text);" />
+              <button onclick="runDomainCheck()" class="btn-primary px-4 py-1.5 text-xs font-medium">Check Now</button>
+            </div>
+
+            <div class="flex items-center gap-1.5 flex-wrap text-xs mb-3">
+              <span style="color: var(--muted);">Try:</span>
+              <button onclick="quickTest('ads.roku.com')" class="btn px-2 py-0.5 text-xs">ads.roku.com</button>
+              <button onclick="quickTest('doubleclick.net')" class="btn px-2 py-0.5 text-xs">doubleclick.net</button>
+              <button onclick="quickTest('tiktok.com')" class="btn px-2 py-0.5 text-xs">tiktok.com</button>
+              <button onclick="quickTest('netflix.com')" class="btn px-2 py-0.5 text-xs">netflix.com</button>
+            </div>
+
+            <div id="testResultBox" class="subpanel p-3 text-xs">
+              <strong style="color: var(--amber);">BLOCKED:</strong> <strong>ads.roku.com</strong> is stopped automatically by <em>Block Smart TV Spying &amp; Ads</em>.
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Col: Pause Apps House-Wide + Custom Block -->
+        <div class="panel p-4 space-y-4">
+          <div>
+            <h2 class="text-sm font-semibold m-0 mb-1">Pause Apps Across Whole Home</h2>
+            <p class="text-xs m-0 mb-3" style="color: var(--muted);">Instantly block an app on all phones, TVs, and laptops on your Wi-Fi</p>
+            <div id="appLocksList" class="space-y-2"></div>
+          </div>
+
+          <div class="pt-3 border-t" style="border-color: var(--border);">
+            <h3 class="text-xs font-semibold m-0 mb-2">Block a Custom Website</h3>
+            <div class="flex gap-1.5 mb-2">
+              <input id="customBlockInput" type="text" placeholder="e.g. facebook.com" class="flex-1 px-2.5 py-1.5 rounded text-xs" style="background: var(--bg); border: 1px solid var(--border-hi); color: var(--text);" />
+              <button onclick="addCustomBlock()" class="btn px-3 py-1.5 text-xs font-medium">Block</button>
+            </div>
+            <div id="customBlocksList" class="flex flex-wrap gap-1.5"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- TAB 4: SPEED TEST & HOME GATEWAY SETUP                              -->
+    <!-- =================================================================== -->
     <div id="panel-speedtest" class="hidden space-y-4">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div class="lg:col-span-2 hud-card p-5">
+        <div class="lg:col-span-2 panel p-5">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div>
-              <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--hud-cyan);">// WAN THROUGHPUT &amp; LATENCY BENCHMARK</span>
-              <h2 class="text-sm font-semibold m-0">Multi-Stream WAN Saturation &amp; Bufferbloat Analyzer</h2>
+              <h2 class="text-sm font-semibold m-0">On-Demand Internet Speed Test</h2>
+              <p class="text-xs m-0 mt-0.5" style="color: var(--muted);">Check your real download speed, upload speed, and video-call / gaming stability</p>
             </div>
-            <button id="runSpeedTestBtn" onclick="startSpeedTest()" class="hud-btn-primary px-4 py-2 text-xs font-mono font-semibold">
-              ▶ INITIATE WAN BENCHMARK
+            <button id="runSpeedBtn" onclick="startSpeedTest()" class="btn-primary px-4 py-2 text-xs font-semibold">
+              ▶ Start Speed Test
             </button>
           </div>
 
-          <div class="mb-5">
-            <div class="flex items-center justify-between text-xs font-mono mb-1.5">
-              <span id="stPhaseLabel" style="color: var(--hud-text);">STANDBY — TARGET: CLOUDFLARE ANYCAST EDGE</span>
-              <span id="stPercentLabel" style="color: var(--hud-cyan);">0%</span>
+          <div class="mb-4">
+            <div class="flex justify-between text-xs mb-1">
+              <span id="stStatus">Ready to test your connection</span>
+              <span id="stPct" class="tabular-nums" style="color: var(--cyan);">0%</span>
             </div>
-            <div class="w-full h-2 rounded-full overflow-hidden" style="background: var(--hud-bg); border: 1px solid var(--hud-border);">
-              <div id="stProgressBar" class="h-full transition-all duration-150" style="width: 0%; background: var(--hud-cyan);"></div>
+            <div class="w-full h-2 rounded-full overflow-hidden" style="background: var(--bg);">
+              <div id="stBar" class="h-full transition-all duration-150" style="width: 0%; background: var(--cyan);"></div>
             </div>
           </div>
 
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-            <div class="hud-subcard p-3">
-              <div class="text-[11px] font-mono" style="color: var(--hud-muted);">DOWNLINK</div>
-              <div class="mt-1 flex items-baseline gap-1">
-                <span id="stDownVal" class="text-2xl font-bold font-mono tabular-nums" style="color: var(--hud-cyan);">486.2</span>
-                <span class="text-xs font-mono" style="color: var(--hud-muted);">Mbps</span>
-              </div>
+            <div class="subpanel p-3">
+              <div class="text-xs" style="color: var(--muted);">Download Speed</div>
+              <div class="mt-1 text-2xl font-bold tabular-nums" style="color: var(--cyan);"><span id="stDown">486.2</span> <span class="text-xs font-normal" style="color: var(--muted);">Mbps</span></div>
             </div>
-            <div class="hud-subcard p-3">
-              <div class="text-[11px] font-mono" style="color: var(--hud-muted);">UPLINK</div>
-              <div class="mt-1 flex items-baseline gap-1">
-                <span id="stUpVal" class="text-2xl font-bold font-mono tabular-nums" style="color: var(--hud-emerald);">94.8</span>
-                <span class="text-xs font-mono" style="color: var(--hud-muted);">Mbps</span>
-              </div>
+            <div class="subpanel p-3">
+              <div class="text-xs" style="color: var(--muted);">Upload Speed</div>
+              <div class="mt-1 text-2xl font-bold tabular-nums" style="color: var(--green);"><span id="stUp">94.8</span> <span class="text-xs font-normal" style="color: var(--muted);">Mbps</span></div>
             </div>
-            <div class="hud-subcard p-3">
-              <div class="text-[11px] font-mono" style="color: var(--hud-muted);">UNLOADED RTT</div>
-              <div class="mt-1 flex items-baseline gap-1">
-                <span id="stPingVal" class="text-2xl font-bold font-mono tabular-nums">9.2</span>
-                <span class="text-xs font-mono" style="color: var(--hud-muted);">ms</span>
-              </div>
+            <div class="subpanel p-3">
+              <div class="text-xs" style="color: var(--muted);">Response Time (Ping)</div>
+              <div class="mt-1 text-2xl font-bold tabular-nums"><span id="stPing">9</span> <span class="text-xs font-normal" style="color: var(--muted);">ms</span></div>
             </div>
-            <div class="hud-subcard p-3">
-              <div class="text-[11px] font-mono" style="color: var(--hud-muted);">BUFFERBLOAT</div>
-              <div class="mt-1 flex items-baseline gap-2">
-                <span id="stGradeVal" class="text-2xl font-bold font-mono" style="color: var(--hud-emerald);">A+</span>
-                <span id="stJitterVal" class="text-xs font-mono" style="color: var(--hud-muted);">+1.8 ms</span>
-              </div>
+            <div class="subpanel p-3">
+              <div class="text-xs" style="color: var(--muted);">Call &amp; Gaming Quality</div>
+              <div class="mt-1 text-2xl font-bold" style="color: var(--green);" id="stQuality">Excellent</div>
             </div>
           </div>
 
-          <div class="w-full h-36 hud-subcard p-2">
-            <canvas id="speedTestCanvas" class="w-full h-full block"></canvas>
+          <!-- Plain-English Verdict -->
+          <div id="stVerdict" class="subpanel p-3 text-xs leading-relaxed">
+            <strong style="color: var(--green);">What this means:</strong> Your internet is running at <strong>97% of your 500 Mbps plan</strong>. You can easily stream 4K movies on multiple TVs, hold HD Zoom calls, and play online games with zero lag.
           </div>
         </div>
 
-        <div class="hud-card p-4 flex flex-col justify-between">
+        <!-- Simple 2-Step Home Setup Card -->
+        <div class="panel p-4 flex flex-col justify-between space-y-3">
           <div>
-            <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--hud-amber);">// TELEMETRY ARCHIVE</span>
-            <h3 class="text-sm font-semibold m-0 mb-3">Recent WAN Benchmarks</h3>
-            <div id="speedHistoryList" class="space-y-2 max-h-72 overflow-y-auto"></div>
-          </div>
-          <div class="pt-3 mt-3 border-t text-xs font-mono" style="border-color: var(--hud-border); color: var(--hud-muted);">
-            SLA BASELINE: <strong style="color: var(--hud-text);">500M DOWN / 100M UP</strong>
-          </div>
-        </div>
-      </div>
-    </div>
+            <h3 class="text-sm font-semibold m-0 mb-1">Connect to Your Real Home Wi-Fi</h3>
+            <p class="text-xs m-0 mb-3" style="color: var(--muted);">Right now you are viewing live simulated home data. To monitor your actual home Wi-Fi:</p>
 
-    <!-- TAB 05: SUBNET TOPOLOGY & WHOLE-HOME DNS GATEWAY SETUP -->
-    <div id="panel-devices" class="hidden space-y-4">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div class="hud-card p-4">
-          <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--hud-cyan);">// ARP &amp; mDNS SUBNET MATRIX</span>
-          <h2 class="text-sm font-semibold m-0 mb-1">Discovered Wi-Fi &amp; LAN Nodes (192.168.1.0/24)</h2>
-          <p class="text-xs m-0 mb-3" style="color: var(--hud-muted);">Click any node to isolate its application traffic in Tab [01]</p>
-          <div id="deviceListContainer" class="space-y-2"></div>
-        </div>
-
-        <div class="hud-card p-4 space-y-3">
-          <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--hud-amber);">// WHOLE-HOME GATEWAY &amp; DNS SINKHOLE DEPLOYMENT</span>
-          <h2 class="text-sm font-semibold m-0">How to Route Your Entire Home Wi-Fi Through J.A.R.V.I.S.</h2>
-          <p class="text-xs m-0" style="color: var(--hud-muted);">
-            Clone this repository on any machine or Raspberry Pi on your home Wi-Fi to run the local RFC 1035 DNS Sinkhole &amp; Packet Collector:
-          </p>
-
-          <div class="hud-subcard p-3 space-y-1.5">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-mono font-semibold" style="color: var(--hud-cyan);">STEP 1: Launch NetPulse Gateway on Your Home Machine</span>
-              <span class="text-[11px] font-mono px-2 py-0.5 rounded" style="background: var(--hud-cyan-soft); color: var(--hud-cyan);">GATEWAY HOST</span>
+            <div class="space-y-2.5 text-xs">
+              <div class="subpanel p-3">
+                <div class="font-semibold mb-1" style="color: var(--cyan);">Step 1 — Run on a PC or Raspberry Pi at home</div>
+                <code class="block font-mono text-[11px] p-2 rounded overflow-x-auto" style="background: var(--bg);">sudo python3 server.py --port 8080 --dns-port 53</code>
+              </div>
+              <div class="subpanel p-3">
+                <div class="font-semibold mb-1" style="color: var(--amber);">Step 2 — Set Router DNS to that computer's IP</div>
+                <p class="m-0" style="color: var(--muted);">In your router settings (usually 192.168.1.1 → DHCP/DNS), set Primary DNS to the computer running J.A.R.V.I.S. Every phone &amp; TV will appear here automatically.</p>
+              </div>
             </div>
-            <pre class="text-xs font-mono m-0 p-2 rounded overflow-x-auto" style="background: var(--hud-bg); color: var(--hud-text);">git clone https://github.com/clvncx1-web/netpulse.git
-cd netpulse && sudo python3 server.py --port 8080 --dns-port 53</pre>
           </div>
 
-          <div class="hud-subcard p-3 space-y-1">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-mono font-semibold" style="color: var(--hud-amber);">STEP 2: Point Your Router's DHCP DNS to Your Host IP</span>
-              <span class="text-[11px] font-mono px-2 py-0.5 rounded" style="background: var(--hud-amber-soft); color: var(--hud-amber);">WHOLE-HOME COVERAGE</span>
-            </div>
-            <p class="text-xs m-0" style="color: var(--hud-muted);">
-              Open your home router settings (<code class="font-mono">192.168.1.1</code>) → <strong>DHCP / LAN Settings</strong> → set <strong>Primary DNS Server</strong> to the local IP of the computer or Raspberry Pi running NetPulse.
-            </p>
-          </div>
-
-          <div class="hud-subcard p-3 space-y-1.5">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-mono font-semibold" style="color: var(--hud-emerald);">OPTIONAL STEP 3: Test Live UDP DNS Sinkhole via CLI</span>
-              <span class="text-[11px] font-mono px-2 py-0.5 rounded" style="background: var(--hud-emerald-soft); color: var(--hud-emerald);">VERIFIED</span>
-            </div>
-            <pre class="text-xs font-mono m-0 p-2 rounded overflow-x-auto" style="background: var(--hud-bg); color: var(--hud-text);">dig @127.0.0.1 -p 5354 ads.roku.com A
-# Returns 0.0.0.0 (SINKHOLED) in 0.1 ms</pre>
+          <div class="pt-3 border-t text-xs" style="border-color: var(--border);">
+            <div class="font-semibold mb-1.5">Recent Speed Tests</div>
+            <div id="speedHistory" class="space-y-1.5"></div>
           </div>
         </div>
       </div>
@@ -663,502 +494,235 @@ cd netpulse && sudo python3 server.py --port 8080 --dns-port 53</pre>
   </div>
 
   <script>
-    let isCapturing = true;
-    let currentTab = 'overview';
+    let liveRunning = true;
+    let activeTab = 'apps';
     let msgFilter = 'ALL';
-    let dnsFilter = 'ALL';
     let selectedMsgId = 1;
-    let masterSinkholeEnabled = true;
+    let showTech = false;
+    let masterShieldOn = true;
 
-    const historyPoints = 60;
-    const downSeries = Array.from({ length: historyPoints }, (_, i) => 110 + Math.sin(i * 0.25) * 35 + Math.random() * 22);
-    const upSeries = Array.from({ length: historyPoints }, (_, i) => 21 + Math.cos(i * 0.2) * 7 + Math.random() * 6);
-    let totalDataGB = 68.42;
-    let peakDown = 318.4;
-    let totalMsgCount = 1482;
-    let cleartextCount = 312;
-    let totalDnsQueries = 14890;
-    let blockedDnsQueries = 3371;
+    const downSeries = Array.from({ length: 60 }, (_, i) => 115 + Math.sin(i * 0.24) * 32 + Math.random() * 18);
+    const upSeries = Array.from({ length: 60 }, (_, i) => 22 + Math.cos(i * 0.2) * 6 + Math.random() * 5);
+    let totalTodayGB = 68.4;
+    let totalBlocked = 3371;
+    let totalRequests = 14890;
 
-    const dnsPolicies = [
-      { id: 'ads_trackers', name: 'Ad Networks & Cross-Site Trackers', enabled: true, blockedCount: 1842, patterns: ['doubleclick.net', 'googleadservices.com', 'googlesyndication.com', 'app-measurement.com', 'branch.io', 'pixel.facebook.com', 'ads.tiktok.com'] },
-      { id: 'smart_tv_acr', name: 'Smart TV ACR & Device Telemetry', enabled: true, blockedCount: 964, patterns: ['samsungads.com', 'acr0.samsungcloudsolution.com', 'ads.roku.com', 'scribe.logs.roku.com', 'lgad.cjpowercast.com', 'telemetry.netflix.com'] },
-      { id: 'os_telemetry', name: 'OS & Background Diagnostics', enabled: true, blockedCount: 518, patterns: ['v10.events.data.microsoft.com', 'settings-win.data.microsoft.com', 'metrics.apple.com'] },
-      { id: 'threat_intel', name: 'Malware, C2 & Cryptomining', enabled: true, blockedCount: 47, patterns: ['c2-beacon-drop.ru', 'crypto-miner-pool.xyz', 'telemetry-check-malware.net'] }
+    const apps = [
+      { id: 'netflix', name: 'Netflix', activity: '4K Video Streaming', device: 'Living Room Apple TV', liveMbps: 48.4, todayGB: 24.8, lockable: true, domains: ['netflix.com', 'nflxvideo.net'] },
+      { id: 'youtube', name: 'YouTube', activity: 'HD Video & Shorts', device: 'iPhone 16 Pro', liveMbps: 26.2, todayGB: 14.4, lockable: true, domains: ['youtube.com', 'googlevideo.com'] },
+      { id: 'steam', name: 'PlayStation / Steam', activity: 'Game Update Download', device: 'PlayStation 5', liveMbps: 34.0, todayGB: 11.2, lockable: true, domains: ['steampowered.com', 'steamcontent.com'] },
+      { id: 'discord', name: 'Discord', activity: 'Voice Chat & Messages', device: "Alex's MacBook Pro", liveMbps: 6.8, todayGB: 4.9, lockable: true, domains: ['discord.com', 'discord.gg'] },
+      { id: 'zoom', name: 'Zoom', activity: 'HD Video Meeting', device: 'Work Desktop PC', liveMbps: 11.5, todayGB: 4.5, lockable: false, domains: ['zoom.us'] },
+      { id: 'icloud', name: 'Apple iCloud', activity: 'Automatic Photo Backup', device: 'iPhone 16 Pro', liveMbps: 8.1, todayGB: 3.9, lockable: false, domains: ['icloud.com'] },
+      { id: 'whatsapp', name: 'WhatsApp', activity: 'Chats & Photo Uploads', device: 'iPhone 16 Pro', liveMbps: 2.4, todayGB: 2.2, lockable: false, domains: ['whatsapp.net'] },
+      { id: 'tiktok', name: 'TikTok', activity: 'Short Video Feed', device: 'iPhone 16 Pro', liveMbps: 4.2, todayGB: 1.8, lockable: true, domains: ['tiktok.com', 'tiktokv.com'] }
     ];
 
-    const appLocks = [
-      { id: 'tiktok', name: 'TikTok Social & Video', locked: false, domains: ['tiktok.com', 'tiktokv.com', 'tiktokcdn.com'] },
-      { id: 'netflix', name: 'Netflix 4K Streaming', locked: false, domains: ['netflix.com', 'nflxvideo.net', 'nflximg.net'] },
-      { id: 'youtube', name: 'YouTube Video CDN', locked: false, domains: ['youtube.com', 'googlevideo.com', 'ytimg.com'] },
-      { id: 'discord', name: 'Discord Voice & Chat', locked: false, domains: ['discord.com', 'discord.gg', 'discordapp.net', 'discord.media'] },
-      { id: 'steam', name: 'Steam Gaming Downloads', locked: false, domains: ['steampowered.com', 'steamcontent.com'] }
+    const appLocks = { netflix: false, youtube: false, steam: false, discord: false, tiktok: false };
+
+    const shields = [
+      { id: 'ads', name: 'Block Ads & Mobile Trackers', desc: 'Stops ad banners, popups, and app tracking SDKs across all phones & browsers.', enabled: true, count: 1842, patterns: ['doubleclick.net', 'googleadservices.com', 'app-measurement.com', 'pixel.facebook.com'] },
+      { id: 'tv', name: 'Block Smart TV Spying & Ads', desc: 'Stops Roku, Samsung, and LG TVs from reporting what you watch.', enabled: true, count: 964, patterns: ['ads.roku.com', 'samsungads.com', 'acr0.samsungcloudsolution.com'] },
+      { id: 'os', name: 'Block Windows & OS Diagnostics', desc: 'Cuts down background telemetry from Windows and smart devices.', enabled: true, count: 518, patterns: ['v10.events.data.microsoft.com', 'metrics.apple.com'] },
+      { id: 'malware', name: 'Block Known Scam & Malware Sites', desc: 'Prevents devices from connecting to phishing or malicious servers.', enabled: true, count: 47, patterns: ['evil-phish-login.com', 'crypto-miner-pool.xyz'] }
     ];
 
-    let customBlocklist = [
-      'ads.roku.com',
-      'acr0.samsungcloudsolution.com',
-      'doubleclick.net',
-      'v10.events.data.microsoft.com',
-      'pixel.facebook.com'
+    let customBlocks = ['ads.roku.com', 'doubleclick.net', 'pixel.facebook.com'];
+
+    const devices = [
+      { name: 'Living Room Apple TV', type: 'Streaming TV', connection: '5 GHz Wi-Fi', liveMbps: 49.2, todayGB: 25.4, adsBlocked: 1140, ip: '192.168.1.14' },
+      { name: 'iPhone 16 Pro', type: 'Smartphone', connection: '5 GHz Wi-Fi', liveMbps: 36.7, todayGB: 13.6, adsBlocked: 980, ip: '192.168.1.41' },
+      { name: "Alex's MacBook Pro", type: 'Laptop', connection: '6 GHz Wi-Fi', liveMbps: 14.8, todayGB: 12.1, adsBlocked: 620, ip: '192.168.1.22' },
+      { name: 'PlayStation 5', type: 'Game Console', connection: 'Wired Cable', liveMbps: 34.5, todayGB: 11.8, adsBlocked: 95, ip: '192.168.1.30' },
+      { name: 'Work Desktop PC', type: 'Desktop', connection: 'Wired Cable', liveMbps: 12.4, todayGB: 4.8, adsBlocked: 442, ip: '192.168.1.55' },
+      { name: 'Smart Thermostat & Hub', type: 'Smart Home', connection: '2.4 GHz Wi-Fi', liveMbps: 0.4, todayGB: 0.5, adsBlocked: 14, ip: '192.168.1.88' },
+      { name: 'Kitchen Sonos Speaker', type: 'Smart Speaker', connection: '5 GHz Wi-Fi', liveMbps: 1.2, todayGB: 0.2, adsBlocked: 80, ip: '192.168.1.92' }
     ];
 
-    const dnsQueryLog = [
-      { id: 901, time: '12:53:24.812', clientIp: '192.168.1.14', device: 'Living Room Apple TV', domain: 'ads.roku.com', qtype: 'A', action: 'SINKHOLED', reason: 'Smart TV ACR & Device Telemetry', response: '0.0.0.0 (0.1 ms)', app: 'Smart TV Telemetry' },
-      { id: 902, time: '12:53:23.405', clientIp: '192.168.1.14', device: 'Living Room Apple TV', domain: 'ipv4-c001-lax001-ix.1.oca.nflxvideo.net', qtype: 'AAAA', action: 'ALLOWED', reason: 'Upstream 1.1.1.1', response: '2607:f8b0::200e (4.2 ms)', app: 'Netflix 4K Stream' },
-      { id: 903, time: '12:53:21.119', clientIp: '192.168.1.41', device: 'iPhone 16 Pro', domain: 'app-measurement.com', qtype: 'A', action: 'SINKHOLED', reason: 'Ad Networks & Cross-Site Trackers', response: '0.0.0.0 (0.1 ms)', app: 'Mobile Ad Tracker' },
-      { id: 904, time: '12:53:19.660', clientIp: '192.168.1.22', device: "Alex's MacBook Pro", domain: 'gateway.discord.gg', qtype: 'HTTPS', action: 'CACHED', reason: 'Gateway TTL Cache', response: '162.159.135.234 (0.2 ms)', app: 'Discord Voice & Chat' },
-      { id: 905, time: '12:53:17.902', clientIp: '192.168.1.55', device: 'Work Desktop PC', domain: 'v10.events.data.microsoft.com', qtype: 'A', action: 'SINKHOLED', reason: 'OS & Background Diagnostics', response: '0.0.0.0 (0.1 ms)', app: 'Windows Telemetry' },
-      { id: 906, time: '12:53:15.331', clientIp: '192.168.1.41', device: 'iPhone 16 Pro', domain: 'g.whatsapp.net', qtype: 'A', action: 'ALLOWED', reason: 'Upstream 1.1.1.1', response: '157.240.22.53 (3.8 ms)', app: 'WhatsApp Messaging' }
-    ];
-
-    const appsData = [
-      { id: 'netflix', name: 'Netflix 4K Stream', category: 'Streaming', device: 'Living Room Apple TV', sni: 'ipv4-c001-lax001-ix.1.oca.nflxvideo.net', liveMbps: 48.4, totalGB: 24.80 },
-      { id: 'youtube', name: 'YouTube (SmartTV & Mobile)', category: 'Streaming', device: 'iPhone 16 Pro', sni: 'rr3---sn-ab5l6nzy.googlevideo.com', liveMbps: 26.2, totalGB: 14.35 },
-      { id: 'steam', name: 'Steam Content CDN', category: 'Gaming', device: 'PlayStation 5', sni: 'lancache.steamcontent.com', liveMbps: 34.0, totalGB: 11.20 },
-      { id: 'discord', name: 'Discord Voice & Chat', category: 'Messaging', device: "Alex's MacBook Pro", sni: 'us-west442.discord.media', liveMbps: 6.8, totalGB: 4.92 },
-      { id: 'zoom', name: 'Zoom HD Video Call', category: 'Messaging', device: 'Work Desktop PC', sni: 'zoom.us / MMR-UDP-8801', liveMbps: 11.5, totalGB: 4.45 },
-      { id: 'icloud', name: 'iCloud Photo & Device Sync', category: 'Cloud', device: 'iPhone 16 Pro', sni: 'p42-content.icloud.com', liveMbps: 8.1, totalGB: 3.88 },
-      { id: 'whatsapp', name: 'WhatsApp Messaging & Media', category: 'Messaging', device: 'iPhone 16 Pro', sni: 'g.whatsapp.net / media-lax3-1.cdn.whatsapp.net', liveMbps: 2.4, totalGB: 2.15 },
-      { id: 'spotify', name: 'Spotify Lossless Audio', category: 'Streaming', device: "Alex's MacBook Pro", sni: 'audio-ak-spotify-com.akamaized.net', liveMbps: 1.9, totalGB: 1.64 },
-      { id: 'github', name: 'GitHub & Docker Registry', category: 'Cloud', device: "Alex's MacBook Pro", sni: 'objects.githubusercontent.com', liveMbps: 3.5, totalGB: 1.03 }
-    ];
-
-    const devicesData = [
-      { name: 'Living Room Apple TV', ip: '192.168.1.14', mac: 'A4:83:E7:21:9B:04', band: '5 GHz Wi-Fi 6', dnsQueries: 4120, blockedAds: 1140, liveMbps: 49.2, totalGB: 25.4 },
-      { name: "Alex's MacBook Pro", ip: '192.168.1.22', mac: 'F8:4D:89:63:10:CC', band: '6 GHz Wi-Fi 6E', dnsQueries: 3890, blockedAds: 620, liveMbps: 14.8, totalGB: 12.1 },
-      { name: 'PlayStation 5', ip: '192.168.1.30', mac: '70:9E:29:4F:81:19', band: 'Ethernet LAN', dnsQueries: 1420, blockedAds: 95, liveMbps: 34.5, totalGB: 11.8 },
-      { name: 'iPhone 16 Pro', ip: '192.168.1.41', mac: 'BC:D0:74:11:5E:8A', band: '5 GHz Wi-Fi 6', dnsQueries: 3180, blockedAds: 980, liveMbps: 36.7, totalGB: 13.6 },
-      { name: 'Work Desktop PC', ip: '192.168.1.55', mac: 'D8:BB:C1:90:02:47', band: 'Ethernet LAN', dnsQueries: 1540, blockedAds: 442, liveMbps: 12.4, totalGB: 4.8 },
-      { name: 'HomeAssistant / IoT Bridge', ip: '192.168.1.88', mac: 'DC:A6:32:77:43:12', band: '2.4 GHz Wi-Fi', dnsQueries: 480, blockedAds: 14, liveMbps: 0.4, totalGB: 0.5 },
-      { name: 'Kitchen Sonos Era', ip: '192.168.1.92', mac: '5C:AA:FD:28:19:01', band: '5 GHz Wi-Fi', dnsQueries: 260, blockedAds: 80, liveMbps: 1.2, totalGB: 0.2 }
-    ];
-
-    const messagesList = [
+    const messages = [
       {
         id: 1,
-        time: '12:53:22.104',
-        device: 'HomeAssistant / IoT Bridge',
-        srcIp: '192.168.1.88:1883',
-        dstIp: '192.168.1.255:1883',
-        protocol: 'MQTT (Cleartext)',
-        category: 'CLEARTEXT',
-        encrypted: false,
-        size: '248 B',
-        summary: 'TOPIC home/livingroom/thermostat -> {"temp_f": 71.5, "humidity": 44, "state": "cooling"}',
-        headers: 'Ethernet II -> IPv4 (192.168.1.88 -> 192.168.1.1) -> TCP Port 1883 (MQTT Publish)',
-        payload: '{\n  "device_id": "nest-hallway-01",\n  "topic": "home/livingroom/thermostat/state",\n  "temp_f": 71.5,\n  "humidity": 44,\n  "mode": "cooling",\n  "announcement": "Target temperature reached"\n}'
+        time: 'Just now',
+        device: 'Smart Thermostat & Hub',
+        app: 'Smart Home Update',
+        category: 'LOCAL',
+        readable: true,
+        headline: 'Reported room temperature: 71.5°F (Humidity 44%, Cooling ON)',
+        explanation: 'This smart-home device sent an unencrypted local message on your Wi-Fi, so J.A.R.V.I.S. can read the full text.',
+        rawIp: '192.168.1.88:1883 → 192.168.1.1:1883 (MQTT)',
+        rawPayload: '{"device":"hallway-thermostat","temp_f":71.5,"humidity":44,"mode":"cooling"}'
       },
       {
         id: 2,
-        time: '12:53:20.839',
-        device: "Alex's MacBook Pro",
-        srcIp: '192.168.1.22:54192',
-        dstIp: '162.159.135.234:443',
-        protocol: 'Discord (TLS SNI + WSS)',
+        time: '12 sec ago',
+        device: 'iPhone 16 Pro',
+        app: 'WhatsApp',
         category: 'CHAT',
-        encrypted: true,
-        size: '1.4 KB',
-        summary: 'SNI: gateway.discord.gg — Outbound Chat Burst (3 frames, TLS 1.3 Application Data)',
-        headers: 'Ethernet II -> IPv4 (192.168.1.22 -> 162.159.135.234) -> TCP 443 -> TLS 1.3 ClientHello / AppData',
-        payload: 'TLS 1.3 Metadata Extracted:\n  Server Name Indication (SNI): gateway.discord.gg\n  ALPN Protocol: h2 (HTTP/2 over TLS)\n  Cipher Suite: TLS_AES_128_GCM_SHA256\n  Traffic Pattern: Interactive text message burst (1,412 bytes TX, 640 bytes RX ACK)'
+        readable: false,
+        headline: 'Sent a photo or voice message (48 KB uploaded)',
+        explanation: 'WhatsApp encrypts chat text end-to-end for privacy. J.A.R.V.I.S. detects the app, device, time, and size of the message burst.',
+        rawIp: '192.168.1.41:51822 → 157.240.22.53:443 (TLS 1.3)',
+        rawPayload: 'SNI: media-lax3-1.cdn.whatsapp.net\nSize: 48,240 bytes outbound\nStatus: Encrypted chat media upload'
       },
       {
         id: 3,
-        time: '12:53:18.412',
-        device: 'iPhone 16 Pro',
-        srcIp: '192.168.1.41:51822',
-        dstIp: '157.240.22.53:443',
-        protocol: 'WhatsApp (Noise/TLS)',
-        category: 'CHAT',
-        encrypted: true,
-        size: '48.2 KB',
-        summary: 'SNI: media-lax3-1.cdn.whatsapp.net — Encrypted Media Attachment Upload',
-        headers: 'Ethernet II -> IPv4 (192.168.1.41 -> 157.240.22.53) -> TCP 443 (WhatsApp Noise Socket)',
-        payload: 'TLS / Noise Frame Analysis:\n  SNI: media-lax3-1.cdn.whatsapp.net\n  Direction: Outbound Upload from iPhone 16 Pro\n  Burst Volume: 48,240 bytes (compressed image/voice-note attachment)'
+        time: '28 sec ago',
+        device: 'Living Room Apple TV',
+        app: 'Ad Blocker',
+        category: 'BLOCKED',
+        readable: true,
+        headline: 'Blocked ad & tracking request to ads.roku.com',
+        explanation: 'Your Apple TV / Smart TV tried to reach a known advertising server. J.A.R.V.I.S. blocked it automatically before it could load.',
+        rawIp: '192.168.1.14 → Gateway DNS :53 (Blocked → 0.0.0.0)',
+        rawPayload: 'DNS Query: ads.roku.com (Type A)\nRule: Block Smart TV Spying & Ads\nResponse: 0.0.0.0 (Blocked in 0.1 ms)'
       },
       {
         id: 4,
-        time: '12:53:15.091',
+        time: '45 sec ago',
+        device: "Alex's MacBook Pro",
+        app: 'Discord',
+        category: 'CHAT',
+        readable: false,
+        headline: 'Sent text chat messages in Discord (1.4 KB)',
+        explanation: 'Discord encrypts message text over TLS. J.A.R.V.I.S. confirms active text messaging from Alex\'s MacBook Pro.',
+        rawIp: '192.168.1.22:54192 → 162.159.135.234:443 (WSS / TLS 1.3)',
+        rawPayload: 'SNI: gateway.discord.gg\nInteractive burst: 1,412 bytes sent'
+      },
+      {
+        id: 5,
+        time: '1 min ago',
         device: 'Living Room Apple TV',
-        srcIp: '192.168.1.14:58410',
-        dstIp: '192.168.1.2:53',
-        protocol: 'DNS Sinkhole',
-        category: 'DNS',
-        encrypted: false,
-        size: '76 B',
-        summary: 'SINKHOLED Query A -> ads.roku.com -> 0.0.0.0 (Blocked by Smart TV ACR Policy)',
-        headers: 'Ethernet II -> IPv4 -> UDP Port 53 (J.A.R.V.I.S. DNS Sinkhole Intercept)',
-        payload: 'Query: ads.roku.com (Type A)\nPolicy Triggered: Smart TV ACR & Device Telemetry\nAction: SINKHOLED -> 0.0.0.0 (0.1 ms)'
+        app: 'AirPlay / Local Broadcast',
+        category: 'LOCAL',
+        readable: true,
+        headline: 'Announced status on Wi-Fi: "Now Playing Netflix"',
+        explanation: 'Apple devices broadcast local discovery announcements on your home Wi-Fi so phones can find them for AirPlay.',
+        rawIp: '192.168.1.14:5353 → 224.0.0.251:5353 (mDNS)',
+        rawPayload: 'Service: _airplay._tcp.local\nModel: AppleTV14,1\nStatus: Active Video Playback'
       }
     ];
 
-    const speedTestHistory = [
-      { time: 'Today, 12:30 PM', down: 486.2, up: 94.8, ping: 9.2, grade: 'A+' },
-      { time: 'Today, 08:15 AM', down: 492.0, up: 96.1, ping: 8.8, grade: 'A+' },
-      { time: 'Yesterday, 09:40 PM', down: 412.5, up: 88.4, ping: 14.1, grade: 'A' }
+    const speedHistory = [
+      { time: 'Today, 12:30 PM', down: 486.2, up: 94.8, ping: 9, verdict: 'Excellent' },
+      { time: 'Today, 8:15 AM', down: 492.0, up: 96.1, ping: 8, verdict: 'Excellent' }
     ];
 
-    function switchTab(tabId) {
-      currentTab = tabId;
-      ['overview', 'dns', 'messages', 'speedtest', 'devices'].forEach(id => {
-        const panel = document.getElementById('panel-' + id);
-        const btn = document.getElementById('tab-' + id);
-        if (id === tabId) {
+    function switchTab(id) {
+      activeTab = id;
+      ['apps', 'messages', 'blocker', 'speedtest'].forEach(t => {
+        const panel = document.getElementById('panel-' + t);
+        const btn = document.getElementById('tab-' + t);
+        if (t === id) {
           panel.classList.remove('hidden');
-          btn.style.background = 'var(--hud-cyan-soft)';
-          btn.style.color = 'var(--hud-text)';
-          btn.style.border = '1px solid var(--hud-border-strong)';
-          btn.style.borderBottom = '2px solid var(--hud-cyan)';
+          btn.style.background = 'var(--cyan-bg)';
+          btn.style.color = 'var(--text)';
+          btn.style.border = '1px solid var(--border-hi)';
+          btn.style.borderBottom = '2px solid var(--cyan)';
         } else {
           panel.classList.add('hidden');
           btn.style.background = 'transparent';
-          btn.style.color = 'var(--hud-muted)';
+          btn.style.color = 'var(--muted)';
           btn.style.border = '1px solid transparent';
         }
       });
-      if (tabId === 'overview') drawTrafficChart();
-      if (tabId === 'dns') renderDnsTab();
-      if (tabId === 'speedtest') drawSpeedTestChart();
+      if (id === 'apps') drawChart();
+      if (id === 'blocker') renderBlocker();
+      if (id === 'messages') renderMessages();
     }
 
-    function toggleCapture() {
-      isCapturing = !isCapturing;
-      document.getElementById('togglePauseBtn').textContent = isCapturing ? 'PAUSE TELEMETRY' : 'RESUME TELEMETRY';
-      document.getElementById('captureStatusText').textContent = isCapturing
-        ? 'GATEWAY ONLINE · DNS :53/UDP ACTIVE'
-        : 'TELEMETRY PAUSED';
+    function toggleLive() {
+      liveRunning = !liveRunning;
+      document.getElementById('pauseBtn').textContent = liveRunning ? 'Pause Live Feed' : 'Resume Live Feed';
     }
 
     function renderApps() {
       const devFilter = document.getElementById('deviceFilter').value;
-      const catFilter = document.getElementById('categoryFilter').value;
-      const tbody = document.getElementById('appTableBody');
+      const filtered = apps
+        .filter(a => devFilter === 'ALL' || a.device === devFilter)
+        .sort((a, b) => b.todayGB - a.todayGB);
 
-      const filtered = appsData
-        .filter(a => (devFilter === 'ALL' || a.device === devFilter) && (catFilter === 'ALL' || a.category === catFilter))
-        .sort((a, b) => b.totalGB - a.totalGB);
-
-      const sumGB = filtered.reduce((acc, item) => acc + item.totalGB, 0) || 1;
-
-      tbody.innerHTML = filtered.map(app => {
-        const pct = ((app.totalGB / sumGB) * 100).toFixed(1);
-        const lockObj = appLocks.find(l => app.id.includes(l.id));
-        const isLocked = lockObj && lockObj.locked;
+      document.getElementById('appsTableBody').innerHTML = filtered.map(a => {
+        const paused = !!appLocks[a.id];
         return `
-          <tr style="border-bottom: 1px solid rgba(68,134,164,0.14);" class="hover:bg-[rgba(70,154,184,0.06)] transition">
-            <td class="py-2.5 pr-3 font-medium">
-              <div class="flex items-center gap-2">
-                <span>${app.name}</span>
-                ${isLocked ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-mono" style="background:var(--hud-crimson-soft); color:#e28787;">SINKHOLED</span>' : ''}
+          <tr style="border-bottom: 1px solid rgba(88,148,178,0.14);" class="hover:bg-[rgba(84,168,199,0.06)]">
+            <td class="py-2.5 pr-3">
+              <div class="font-semibold flex items-center gap-2">
+                <span>${a.name}</span>
+                ${paused ? '<span class="px-1.5 py-0.5 rounded text-[11px]" style="background:var(--red-bg); color:#e69090;">Paused</span>' : ''}
               </div>
+              <div class="text-[11px]" style="color: var(--muted);">${a.activity}</div>
             </td>
-            <td class="py-2.5 px-3">
-              <span class="px-2 py-0.5 rounded font-mono text-[11px]" style="background: var(--hud-bg); border: 1px solid var(--hud-border); color: var(--hud-muted);">${app.category}</span>
+            <td class="py-2.5 px-3" style="color: var(--muted);">${a.device}</td>
+            <td class="py-2.5 px-3 text-right tabular-nums font-medium" style="color: ${paused ? 'var(--red)' : 'var(--cyan)'};">
+              ${paused ? '0 Mbps' : a.liveMbps.toFixed(1) + ' Mbps'}
             </td>
-            <td class="py-2.5 px-3" style="color: var(--hud-muted);">${app.device}</td>
-            <td class="py-2.5 px-3 font-mono truncate max-w-[190px]" style="color: var(--hud-muted);" title="${app.sni}">${app.sni}</td>
-            <td class="py-2.5 px-3 text-right font-mono tabular-nums" style="color: ${isLocked ? 'var(--hud-crimson)' : 'var(--hud-cyan)'};">${isLocked ? '0.0 Mbps' : app.liveMbps.toFixed(1) + ' Mbps'}</td>
-            <td class="py-2.5 px-3 text-right font-mono font-semibold tabular-nums">${app.totalGB.toFixed(2)} GB</td>
-            <td class="py-2.5 pl-3">
-              <div class="flex items-center gap-2">
-                <div class="w-full h-1.5 rounded-full overflow-hidden" style="background: var(--hud-bg);">
-                  <div class="h-full" style="width: ${pct}%; background: var(--hud-cyan);"></div>
-                </div>
-                <span class="font-mono tabular-nums w-10 text-right" style="color: var(--hud-muted);">${pct}%</span>
-              </div>
+            <td class="py-2.5 px-3 text-right tabular-nums font-semibold">${a.todayGB.toFixed(1)} GB</td>
+            <td class="py-2.5 pl-3 text-right">
+              ${a.lockable
+                ? `<button onclick="toggleAppLock('${a.id}')" class="btn px-2.5 py-1 text-[11px]" style="${paused ? 'background:var(--red-bg); border-color:var(--red); color:#f0b4b4;' : ''}">${paused ? 'Unpause' : 'Pause App'}</button>`
+                : `<span class="text-[11px]" style="color: var(--muted);">Active</span>`
+              }
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    function evaluateDomainSinkhole(domain) {
-      const d = domain.toLowerCase().trim();
-      if (!masterSinkholeEnabled) {
-        return { blocked: false, reason: 'Sinkhole Shield Disabled' };
-      }
-      for (const pat of customBlocklist) {
-        if (d === pat || d.endsWith('.' + pat)) {
-          return { blocked: true, reason: `Custom Denylist (${pat})` };
-        }
-      }
-      for (const lock of appLocks) {
-        if (lock.locked) {
-          for (const pat of lock.domains) {
-            if (d === pat || d.endsWith('.' + pat)) {
-              return { blocked: true, reason: `Whole-Home App Lock: ${lock.name}` };
-            }
-          }
-        }
-      }
-      for (const pol of dnsPolicies) {
-        if (!pol.enabled) continue;
-        for (const pat of pol.patterns) {
-          if (d === pat || d.endsWith('.' + pat)) {
-            pol.blockedCount++;
-            return { blocked: true, reason: pol.name };
-          }
-        }
-      }
-      return { blocked: false, reason: 'Upstream 1.1.1.1 (Cloudflare DoH)' };
-    }
-
-    function classifyDomainApp(domain) {
-      const d = domain.toLowerCase();
-      if (d.includes('netflix') || d.includes('nflxvideo')) return 'Netflix 4K Stream';
-      if (d.includes('youtube') || d.includes('googlevideo')) return 'YouTube';
-      if (d.includes('discord')) return 'Discord Voice & Chat';
-      if (d.includes('whatsapp')) return 'WhatsApp Messaging';
-      if (d.includes('tiktok')) return 'TikTok';
-      if (d.includes('steam')) return 'Steam Content CDN';
-      if (d.includes('roku') || d.includes('samsung')) return 'Smart TV ACR Telemetry';
-      if (d.includes('doubleclick') || d.includes('measurement') || d.includes('facebook')) return 'Ad & Tracker SDK';
-      if (d.includes('microsoft')) return 'Windows Diagnostics';
-      return 'General HTTPS Service';
-    }
-
-    function quickDnsTest(domain) {
-      document.getElementById('dnsTestDomain').value = domain;
-      runDnsTestQuery();
-    }
-
-    function runDnsTestQuery() {
-      const domainInput = document.getElementById('dnsTestDomain');
-      const clientSelect = document.getElementById('dnsTestClient');
-      const domain = (domainInput.value || 'ads.roku.com').trim().toLowerCase();
-      const clientIp = clientSelect.value;
-      const deviceName = clientSelect.options[clientSelect.selectedIndex].text.split(' (')[0];
-
-      const verdict = evaluateDomainSinkhole(domain);
-      const appName = classifyDomainApp(domain);
-      const now = new Date();
-      const timeStr = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
-
-      totalDnsQueries++;
-      let action = 'ALLOWED';
-      let responseStr = `104.21.${Math.floor(Math.random() * 200 + 10)}.${Math.floor(Math.random() * 200 + 10)} (3.4 ms)`;
-      if (verdict.blocked) {
-        blockedDnsQueries++;
-        action = 'SINKHOLED';
-        responseStr = '0.0.0.0 (0.1 ms)';
-      }
-
-      const entry = {
-        id: Date.now(),
-        time: timeStr,
-        clientIp,
-        device: deviceName,
-        domain,
-        qtype: 'A',
-        action,
-        reason: verdict.reason,
-        response: responseStr,
-        app: appName
-      };
-
-      dnsQueryLog.unshift(entry);
-      updateDnsKpis();
-
-      const box = document.getElementById('dnsTestResultBox');
-      if (verdict.blocked) {
-        box.innerHTML = `
+    function renderDevices() {
+      document.getElementById('devicesList').innerHTML = devices.map(d => `
+        <div onclick="filterDevice('${d.name.replace(/'/g, "\\'")}')" class="subpanel p-2.5 hover:border-[var(--cyan)] cursor-pointer transition flex items-center justify-between gap-2">
           <div>
-            <span style="color: var(--hud-amber);">[SINKHOLED // BLOCKED]</span>
-            <strong class="ml-1" style="color: var(--hud-text);">${domain}</strong>
-            <span style="color: var(--hud-muted);">from ${deviceName} (${clientIp})</span>
+            <div class="text-xs font-semibold">${d.name}</div>
+            <div class="text-[11px]" style="color: var(--muted);">${d.type} · ${d.connection}</div>
           </div>
-          <div class="flex items-center gap-3">
-            <span style="color: var(--hud-muted);">Policy: ${verdict.reason}</span>
-            <span class="px-2 py-0.5 rounded" style="background: var(--hud-crimson-soft); color: #e28787;">→ 0.0.0.0 (0.1 ms)</span>
+          <div class="text-right">
+            <div class="text-xs font-semibold tabular-nums" style="color: var(--cyan);">${d.liveMbps.toFixed(1)} Mbps</div>
+            <div class="text-[11px]" style="color: var(--muted);">${d.todayGB.toFixed(1)} GB today</div>
           </div>
-        `;
-      } else {
-        box.innerHTML = `
-          <div>
-            <span style="color: var(--hud-emerald);">[ALLOWED // RESOLVED]</span>
-            <strong class="ml-1" style="color: var(--hud-text);">${domain}</strong>
-            <span style="color: var(--hud-muted);">from ${deviceName} (${clientIp})</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <span style="color: var(--hud-muted);">Attributed App: ${appName}</span>
-            <span class="px-2 py-0.5 rounded" style="background: var(--hud-emerald-soft); color: var(--hud-emerald);">→ ${responseStr}</span>
-          </div>
-        `;
-      }
-
-      document.getElementById('jarvisTicker').textContent =
-        `${action}: ${domain} from ${deviceName} (${clientIp}) -> ${responseStr} [${verdict.reason}]`;
-
-      renderDnsTab();
+        </div>
+      `).join('');
     }
 
-    function toggleMasterSinkhole() {
-      masterSinkholeEnabled = !masterSinkholeEnabled;
-      const btn = document.getElementById('masterSinkholeBtn');
-      const kpiState = document.getElementById('kpiSinkholeState');
-      if (masterSinkholeEnabled) {
-        btn.textContent = 'SHIELD: ACTIVE (0.0.0.0)';
-        btn.className = 'hud-btn-amber px-3 py-1 text-xs font-mono';
-        kpiState.textContent = 'SHIELD ON';
-        kpiState.style.color = 'var(--hud-amber)';
-      } else {
-        btn.textContent = 'SHIELD: BYPASSED';
-        btn.className = 'hud-btn px-3 py-1 text-xs font-mono';
-        kpiState.textContent = 'BYPASSED';
-        kpiState.style.color = 'var(--hud-muted)';
-      }
-    }
-
-    function toggleAppLock(appId) {
-      const target = appLocks.find(a => a.id === appId);
-      if (!target) return;
-      target.locked = !target.locked;
-      renderDnsTab();
+    function filterDevice(name) {
+      const sel = document.getElementById('deviceFilter');
+      sel.value = [...sel.options].some(o => o.value === name) ? name : 'ALL';
       renderApps();
-      if (target.locked) {
-        quickDnsTest(target.domains[0]);
-      }
-    }
-
-    function togglePolicy(polId) {
-      const pol = dnsPolicies.find(p => p.id === polId);
-      if (!pol) return;
-      pol.enabled = !pol.enabled;
-      renderDnsTab();
-    }
-
-    function addCustomSinkholeDomain() {
-      const inp = document.getElementById('customDomainInput');
-      const val = (inp.value || '').trim().toLowerCase().replace(/^\*\./, '');
-      if (!val) return;
-      if (!customBlocklist.includes(val)) {
-        customBlocklist.unshift(val);
-      }
-      inp.value = '';
-      renderDnsTab();
-      quickDnsTest(val);
-    }
-
-    function removeCustomSinkholeDomain(dom) {
-      customBlocklist = customBlocklist.filter(d => d !== dom);
-      renderDnsTab();
-    }
-
-    function setDnsFilter(f) {
-      dnsFilter = f;
-      ['ALL', 'SINKHOLED', 'ALLOWED'].forEach(k => {
-        const b = document.getElementById('dnsf-' + k);
-        b.className = (k === f) ? 'hud-btn-primary px-2.5 py-1 text-xs' : 'hud-btn px-2.5 py-1 text-xs';
-      });
-      renderDnsTab();
-    }
-
-    function updateDnsKpis() {
-      document.getElementById('kpiBlockedDns').textContent = blockedDnsQueries.toLocaleString();
-      document.getElementById('kpiTotalDns').textContent = totalDnsQueries.toLocaleString();
-      const pct = ((blockedDnsQueries / Math.max(1, totalDnsQueries)) * 100).toFixed(1);
-      document.getElementById('kpiBlockedPct').textContent = `(${pct}%)`;
-    }
-
-    function renderDnsTab() {
-      const locksEl = document.getElementById('appLocksContainer');
-      locksEl.innerHTML = appLocks.map(a => `
-        <div onclick="toggleAppLock('${a.id}')" class="hud-subcard p-2.5 flex items-center justify-between cursor-pointer hover:border-[var(--hud-cyan)] transition">
-          <div>
-            <div class="text-xs font-medium">${a.name}</div>
-            <div class="text-[11px] font-mono" style="color: var(--hud-muted);">${a.domains.slice(0, 2).join(', ')}</div>
-          </div>
-          <span class="px-2.5 py-1 rounded text-[11px] font-mono font-semibold" style="background: ${a.locked ? 'var(--hud-crimson-soft)' : 'var(--hud-emerald-soft)'}; color: ${a.locked ? '#e28787' : 'var(--hud-emerald)'}; border: 1px solid ${a.locked ? 'rgba(184,82,82,0.4)' : 'rgba(61,153,122,0.35)'};">
-            ${a.locked ? '🔒 SINKHOLED' : 'UNLOCKED'}
-          </span>
-        </div>
-      `).join('');
-
-      const polGrid = document.getElementById('dnsPoliciesGrid');
-      polGrid.innerHTML = dnsPolicies.map(p => `
-        <div onclick="togglePolicy('${p.id}')" class="hud-subcard p-3 flex items-center justify-between cursor-pointer hover:border-[var(--hud-cyan)] transition">
-          <div>
-            <div class="text-xs font-semibold">${p.name}</div>
-            <div class="text-[11px] font-mono mt-0.5" style="color: var(--hud-muted);">Intercepted: <strong style="color: var(--hud-amber);">${p.blockedCount.toLocaleString()}</strong> queries</div>
-          </div>
-          <span class="px-2 py-0.5 rounded text-[11px] font-mono" style="background: ${p.enabled ? 'var(--hud-cyan-soft)' : 'var(--hud-bg)'}; color: ${p.enabled ? 'var(--hud-cyan)' : 'var(--hud-muted)'}; border: 1px solid var(--hud-border-strong);">
-            ${p.enabled ? 'ACTIVE' : 'OFF'}
-          </span>
-        </div>
-      `).join('');
-
-      const tagsEl = document.getElementById('customBlocklistTags');
-      tagsEl.innerHTML = customBlocklist.map(dom => `
-        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono" style="background: var(--hud-bg); border: 1px solid var(--hud-border-strong); color: var(--hud-amber);">
-          <span>${dom}</span>
-          <button onclick="removeCustomSinkholeDomain('${dom}')" class="hover:text-white cursor-pointer" style="color: var(--hud-muted);">×</button>
-        </span>
-      `).join('');
-
-      const tbody = document.getElementById('dnsLogTableBody');
-      const filtered = dnsQueryLog.filter(q => {
-        if (dnsFilter === 'SINKHOLED') return q.action === 'SINKHOLED';
-        if (dnsFilter === 'ALLOWED') return q.action !== 'SINKHOLED';
-        return true;
-      });
-
-      tbody.innerHTML = filtered.slice(0, 30).map(q => {
-        const isSink = q.action === 'SINKHOLED';
-        const badgeStyle = isSink
-          ? 'background: var(--hud-crimson-soft); color: #e28787;'
-          : 'background: var(--hud-emerald-soft); color: var(--hud-emerald);';
-        return `
-          <tr style="border-bottom: 1px solid rgba(68,134,164,0.12);" class="hover:bg-[rgba(70,154,184,0.06)]">
-            <td class="py-2 px-2.5 whitespace-nowrap" style="color: var(--hud-muted);">${q.time}</td>
-            <td class="py-2 px-2.5 whitespace-nowrap font-sans font-medium">${q.device}</td>
-            <td class="py-2 px-2.5 whitespace-nowrap" style="color: ${isSink ? 'var(--hud-amber)' : 'var(--hud-text)'};">${q.domain}</td>
-            <td class="py-2 px-2.5 whitespace-nowrap" style="color: var(--hud-muted);">${q.qtype}</td>
-            <td class="py-2 px-2.5 whitespace-nowrap" style="color: var(--hud-cyan);">${q.app}</td>
-            <td class="py-2 px-2.5 whitespace-nowrap">
-              <span class="px-1.5 py-0.5 rounded text-[10px]" style="${badgeStyle}">${q.action}</span>
-              <span class="ml-1 text-[11px]" style="color: var(--hud-muted);">${q.reason}</span>
-            </td>
-            <td class="py-2 px-2.5 text-right whitespace-nowrap" style="color: var(--hud-muted);">${q.response}</td>
-          </tr>
-        `;
-      }).join('');
     }
 
     function setMsgFilter(f) {
       msgFilter = f;
-      ['ALL', 'CHAT', 'CLEARTEXT', 'DNS'].forEach(k => {
-        const b = document.getElementById('msgf-' + k);
-        b.className = (k === f) ? 'hud-btn-primary px-2.5 py-1 text-xs' : 'hud-btn px-2.5 py-1 text-xs';
+      ['ALL', 'CHAT', 'LOCAL', 'BLOCKED'].forEach(k => {
+        document.getElementById('mf-' + k).className = (k === f) ? 'btn-primary px-2.5 py-1 text-xs' : 'btn px-2.5 py-1 text-xs';
       });
       renderMessages();
     }
 
     function renderMessages() {
       const q = (document.getElementById('msgSearch')?.value || '').toLowerCase();
-      const tbody = document.getElementById('msgTableBody');
-
-      const filtered = messagesList.filter(m => {
+      const filtered = messages.filter(m => {
         const matchCat = msgFilter === 'ALL' || m.category === msgFilter;
-        const matchQ = !q || m.device.toLowerCase().includes(q) || m.protocol.toLowerCase().includes(q) || m.summary.toLowerCase().includes(q);
+        const matchQ = !q || m.device.toLowerCase().includes(q) || m.app.toLowerCase().includes(q) || m.headline.toLowerCase().includes(q);
         return matchCat && matchQ;
       });
 
-      tbody.innerHTML = filtered.map(m => {
-        const isSelected = m.id === selectedMsgId;
-        const protoColor = m.encrypted ? 'var(--hud-cyan)' : 'var(--hud-amber)';
+      document.getElementById('messagesList').innerHTML = filtered.map(m => {
+        const active = m.id === selectedMsgId;
+        const tagColor = m.category === 'BLOCKED' ? 'var(--amber)' : (m.readable ? 'var(--green)' : 'var(--cyan)');
         return `
-          <tr onclick="selectMessage(${m.id})" style="border-bottom: 1px solid rgba(68,134,164,0.14); background: ${isSelected ? 'rgba(70,154,184,0.14)' : 'transparent'};" class="cursor-pointer hover:bg-[rgba(70,154,184,0.08)] transition">
-            <td class="py-2 px-2.5 whitespace-nowrap" style="color: var(--hud-muted);">${m.time}</td>
-            <td class="py-2 px-2.5 font-sans font-medium whitespace-nowrap">${m.device}</td>
-            <td class="py-2 px-2.5 whitespace-nowrap" style="color: ${protoColor};">${m.protocol}</td>
-            <td class="py-2 px-2.5 truncate max-w-[260px]">${m.summary}</td>
-            <td class="py-2 px-2.5 text-right whitespace-nowrap" style="color: var(--hud-muted);">${m.size}</td>
-          </tr>
+          <div onclick="selectMessage(${m.id})" class="subpanel p-3 cursor-pointer transition" style="${active ? 'border-color: var(--cyan); background: rgba(84,168,199,0.1);' : ''}">
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <div class="flex items-center gap-2 text-xs">
+                <strong style="color: var(--text);">${m.device}</strong>
+                <span class="px-1.5 py-0.5 rounded text-[11px]" style="background: var(--bg); color: ${tagColor};">${m.app}</span>
+              </div>
+              <span class="text-[11px]" style="color: var(--muted);">${m.time}</span>
+            </div>
+            <div class="text-xs" style="color: var(--text);">${m.headline}</div>
+          </div>
         `;
       }).join('');
 
-      renderInspector();
+      renderMessageDetail();
     }
 
     function selectMessage(id) {
@@ -1166,105 +730,249 @@ cd netpulse && sudo python3 server.py --port 8080 --dns-port 53</pre>
       renderMessages();
     }
 
-    function renderInspector() {
-      const msg = messagesList.find(m => m.id === selectedMsgId) || messagesList[0];
-      if (!msg) return;
-      const badge = document.getElementById('inspectorEncryptionBadge');
-      badge.textContent = msg.encrypted ? 'TLS 1.3 SNI // METADATA' : 'CLEARTEXT PAYLOAD';
-      badge.style.background = msg.encrypted ? 'var(--hud-cyan-soft)' : 'var(--hud-amber-soft)';
-      badge.style.color = msg.encrypted ? 'var(--hud-cyan)' : 'var(--hud-amber)';
+    function renderMessageDetail() {
+      const m = messages.find(x => x.id === selectedMsgId) || messages[0];
+      if (!m) return;
+      const badge = document.getElementById('detailBadge');
+      badge.textContent = m.category === 'BLOCKED' ? 'Blocked Automatically' : (m.readable ? 'Readable Local Message' : 'Encrypted Chat Activity');
+      badge.style.background = m.category === 'BLOCKED' ? 'var(--amber-bg)' : (m.readable ? 'var(--green-bg)' : 'var(--cyan-bg)');
+      badge.style.color = m.category === 'BLOCKED' ? 'var(--amber)' : (m.readable ? 'var(--green)' : 'var(--cyan)');
 
-      document.getElementById('inspectorContent').innerHTML = `
-        <div class="grid grid-cols-2 gap-2 p-2.5 hud-subcard font-mono">
-          <div>
-            <div class="text-[10px]" style="color: var(--hud-muted);">SOURCE ENDPOINT</div>
-            <div class="font-semibold">${msg.srcIp}</div>
-          </div>
-          <div>
-            <div class="text-[10px]" style="color: var(--hud-muted);">TARGET ENDPOINT</div>
-            <div class="font-semibold">${msg.dstIp}</div>
-          </div>
+      document.getElementById('detailPlain').innerHTML = `
+        <div>
+          <div style="color: var(--muted);">Device</div>
+          <div class="font-semibold text-sm">${m.device}</div>
         </div>
         <div>
-          <div class="text-[11px] font-mono uppercase mb-1" style="color: var(--hud-muted);">L2–L4 Frame Encapsulation</div>
-          <div class="p-2 hud-subcard font-mono">${msg.headers}</div>
+          <div style="color: var(--muted);">What Happened</div>
+          <div class="mt-0.5 leading-relaxed">${m.headline}</div>
         </div>
-        <div>
-          <div class="text-[11px] font-mono uppercase mb-1" style="color: var(--hud-muted);">Decoded Payload / Telemetry</div>
-          <pre class="p-2.5 hud-subcard font-mono text-xs overflow-x-auto whitespace-pre-wrap m-0" style="color: var(--hud-text);">${msg.payload}</pre>
+        <div class="subpanel p-3" style="color: var(--muted);">
+          <strong style="color: var(--text);">Why you see this:</strong> ${m.explanation}
         </div>
+      `;
+
+      document.getElementById('techDetailsBox').innerHTML = `
+        <div class="subpanel p-2.5">
+          <div style="color: var(--muted);">Connection</div>
+          <div>${m.rawIp}</div>
+        </div>
+        <pre class="subpanel p-2.5 m-0 overflow-x-auto whitespace-pre-wrap">${m.rawPayload}</pre>
       `;
     }
 
-    function injectSimulatedMessage() {
-      const now = new Date();
-      const timeStr = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
+    function toggleTechDetails() {
+      showTech = !showTech;
+      document.getElementById('techDetailsBox').classList.toggle('hidden', !showTech);
+      document.getElementById('techToggleBtn').textContent = showTech
+        ? 'Hide Technical Details'
+        : 'Show Technical Details (IP / Headers / Raw Data)';
+    }
+
+    function addSimulatedActivity() {
       const samples = [
         {
           device: 'iPhone 16 Pro',
-          srcIp: '192.168.1.41:59210',
-          dstIp: '17.57.144.83:443',
-          protocol: 'iMessage (APNs TLS)',
+          app: 'iMessage',
           category: 'CHAT',
-          encrypted: true,
-          size: '1.8 KB',
-          summary: 'SNI: courier.push.apple.com — Outbound iMessage Push Frame',
-          headers: 'Ethernet II -> IPv4 -> TCP 443 -> Apple Push Notification Service (TLS 1.3)',
-          payload: 'TLS 1.3 Handshake & Frame Telemetry:\n  SNI: courier.push.apple.com\n  Device: iPhone 16 Pro (192.168.1.41)\n  Payload Size: 1,840 bytes'
+          readable: false,
+          headline: 'Sent an encrypted iMessage (1.8 KB)',
+          explanation: 'iMessage is end-to-end encrypted by Apple. J.A.R.V.I.S. logs the active chat event and device without reading private text.',
+          rawIp: '192.168.1.41 → 17.57.144.83:443 (Apple Push TLS 1.3)',
+          rawPayload: 'SNI: courier.push.apple.com\nPayload: 1,840 bytes (encrypted)'
         },
         {
-          device: 'Living Room Apple TV',
-          srcIp: '192.168.1.14:51209',
-          dstIp: '192.168.1.2:53',
-          protocol: 'DNS Sinkhole',
-          category: 'DNS',
-          encrypted: false,
-          size: '82 B',
-          summary: 'SINKHOLED Query A -> acr0.samsungcloudsolution.com -> 0.0.0.0',
-          headers: 'Ethernet II -> IPv4 -> UDP Port 53 (J.A.R.V.I.S. DNS Sinkhole Intercept)',
-          payload: 'Query: acr0.samsungcloudsolution.com (Type A)\nPolicy: Smart TV ACR & Device Telemetry\nAction: SINKHOLED -> 0.0.0.0 (0.1 ms)'
+          device: 'Kitchen Sonos Speaker',
+          app: 'Smart Speaker Status',
+          category: 'LOCAL',
+          readable: true,
+          headline: 'Broadcasted local playback state: "Playing Spotify Playlist"',
+          explanation: 'Smart speakers send readable local status updates over Wi-Fi so apps on your phone can control volume and tracks.',
+          rawIp: '192.168.1.92:1900 → 239.255.255.250:1900 (SSDP)',
+          rawPayload: 'NOTIFY * HTTP/1.1\nSERVER: Sonos/80.1\nSTATE: PLAYING_SPOTIFY'
         }
       ];
       const pick = samples[Math.floor(Math.random() * samples.length)];
       const newId = Date.now();
-      messagesList.unshift({ id: newId, time: timeStr, ...pick });
+      messages.unshift({ id: newId, time: 'Just now', ...pick });
       selectedMsgId = newId;
-      totalMsgCount++;
-      if (!pick.encrypted) cleartextCount++;
-      document.getElementById('kpiMsgCount').textContent = totalMsgCount.toLocaleString();
-      document.getElementById('kpiCleartextCount').textContent = cleartextCount.toLocaleString();
+      document.getElementById('kpiLastEvent').textContent = `${pick.device}: ${pick.app}`;
       renderMessages();
     }
 
-    function renderDevices() {
-      const container = document.getElementById('deviceListContainer');
-      container.innerHTML = devicesData.map(d => `
-        <div onclick="filterByDevice('${d.name.replace(/'/g, "\\'")}')" class="hud-subcard p-3 hover:border-[var(--hud-cyan)] transition cursor-pointer flex items-center justify-between gap-3">
+    // --- AD BLOCKER & APP CONTROLS ---
+    function toggleMasterShield() {
+      masterShieldOn = !masterShieldOn;
+      document.getElementById('masterShieldBtn').textContent = masterShieldOn ? 'Master Shield: ON' : 'Master Shield: OFF';
+      document.getElementById('kpiShieldBadge').textContent = masterShieldOn ? 'Protection ON' : 'Paused';
+      document.getElementById('kpiShieldBadge').style.color = masterShieldOn ? 'var(--green)' : 'var(--muted)';
+      renderBlocker();
+    }
+
+    function toggleShield(id) {
+      const s = shields.find(x => x.id === id);
+      if (s) s.enabled = !s.enabled;
+      renderBlocker();
+    }
+
+    function toggleAppLock(id) {
+      appLocks[id] = !appLocks[id];
+      renderApps();
+      renderBlocker();
+    }
+
+    function addCustomBlock() {
+      const inp = document.getElementById('customBlockInput');
+      const v = (inp.value || '').trim().toLowerCase();
+      if (!v) return;
+      if (!customBlocks.includes(v)) customBlocks.unshift(v);
+      inp.value = '';
+      renderBlocker();
+      quickTest(v);
+    }
+
+    function removeCustomBlock(dom) {
+      customBlocks = customBlocks.filter(d => d !== dom);
+      renderBlocker();
+    }
+
+    function quickTest(dom) {
+      document.getElementById('testDomainInput').value = dom;
+      runDomainCheck();
+    }
+
+    function runDomainCheck() {
+      const dom = (document.getElementById('testDomainInput').value || '').trim().toLowerCase();
+      if (!dom) return;
+      let blockedBy = null;
+
+      if (masterShieldOn) {
+        if (customBlocks.some(b => dom === b || dom.endsWith('.' + b))) {
+          blockedBy = 'Your Custom Blocked List';
+        }
+        if (!blockedBy) {
+          for (const a of apps) {
+            if (appLocks[a.id] && a.domains.some(d => dom === d || dom.endsWith('.' + d))) {
+              blockedBy = `Paused App (${a.name})`;
+              break;
+            }
+          }
+        }
+        if (!blockedBy) {
+          for (const s of shields) {
+            if (s.enabled && s.patterns.some(p => dom === p || dom.endsWith('.' + p))) {
+              blockedBy = s.name;
+              break;
+            }
+          }
+        }
+      }
+
+      const box = document.getElementById('testResultBox');
+      if (blockedBy) {
+        box.innerHTML = `<strong style="color: var(--amber);">BLOCKED:</strong> <strong>${dom}</strong> is stopped automatically by <em>${blockedBy}</em> before it can load.`;
+      } else {
+        box.innerHTML = `<strong style="color: var(--green);">ALLOWED:</strong> <strong>${dom}</strong> loads normally on your home Wi-Fi.`;
+      }
+    }
+
+    function renderBlocker() {
+      document.getElementById('shieldsList').innerHTML = shields.map(s => `
+        <div onclick="toggleShield('${s.id}')" class="subpanel p-3 cursor-pointer flex items-start justify-between gap-3 hover:border-[var(--cyan)] transition">
           <div>
-            <div class="text-xs font-semibold">${d.name}</div>
-            <div class="text-[11px] font-mono mt-0.5" style="color: var(--hud-muted);">${d.ip} · ${d.mac} · ${d.band}</div>
-            <div class="text-[11px] font-mono mt-0.5" style="color: var(--hud-amber);">DNS Queries: ${d.dnsQueries.toLocaleString()} (${d.blockedAds} sinkholed)</div>
+            <div class="text-xs font-semibold">${s.name}</div>
+            <div class="text-[11px] mt-0.5 leading-snug" style="color: var(--muted);">${s.desc}</div>
+            <div class="text-[11px] mt-1.5" style="color: var(--amber);">${s.count.toLocaleString()} blocked today</div>
           </div>
-          <div class="text-right font-mono">
-            <div class="text-xs font-semibold" style="color: var(--hud-cyan);">${d.liveMbps.toFixed(1)} Mbps</div>
-            <div class="text-[11px]" style="color: var(--hud-muted);">${d.totalGB.toFixed(1)} GB / 24h</div>
+          <div class="toggle-track mt-0.5" style="background: ${s.enabled && masterShieldOn ? 'var(--green)' : '#253242'};">
+            <div class="toggle-thumb" style="left: ${s.enabled && masterShieldOn ? '21px' : '3px'};"></div>
           </div>
+        </div>
+      `).join('');
+
+      const lockableApps = apps.filter(a => a.lockable);
+      document.getElementById('appLocksList').innerHTML = lockableApps.map(a => {
+        const paused = !!appLocks[a.id];
+        return `
+          <div onclick="toggleAppLock('${a.id}')" class="subpanel p-2.5 cursor-pointer flex items-center justify-between hover:border-[var(--cyan)] transition">
+            <div>
+              <div class="text-xs font-semibold">${a.name}</div>
+              <div class="text-[11px]" style="color: var(--muted);">${paused ? 'Blocked on all home devices' : 'Allowed on Wi-Fi'}</div>
+            </div>
+            <div class="toggle-track" style="background: ${paused ? 'var(--red)' : '#253242'};">
+              <div class="toggle-thumb" style="left: ${paused ? '21px' : '3px'};"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('customBlocksList').innerHTML = customBlocks.map(d => `
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs" style="background: var(--bg); border: 1px solid var(--border-hi); color: var(--amber);">
+          ${d}
+          <button onclick="removeCustomBlock('${d}')" class="cursor-pointer" style="background:none; border:none; color: var(--muted);">×</button>
+        </span>
+      `).join('');
+    }
+
+    // --- SPEED TEST ---
+    let speedRunning = false;
+    function renderSpeedHistory() {
+      document.getElementById('speedHistory').innerHTML = speedHistory.map(h => `
+        <div class="subpanel p-2 flex items-center justify-between text-xs">
+          <span style="color: var(--muted);">${h.time}</span>
+          <span class="tabular-nums"><strong style="color: var(--cyan);">↓ ${h.down.toFixed(0)}</strong> / <strong style="color: var(--green);">↑ ${h.up.toFixed(0)} Mbps</strong> · ${h.ping} ms</span>
         </div>
       `).join('');
     }
 
-    function filterByDevice(name) {
-      const select = document.getElementById('deviceFilter');
-      if ([...select.options].some(o => o.value === name)) {
-        select.value = name;
-      } else {
-        select.value = 'ALL';
-      }
-      switchTab('overview');
-      renderApps();
+    async function startSpeedTest() {
+      if (speedRunning) return;
+      speedRunning = true;
+      const btn = document.getElementById('runSpeedBtn');
+      btn.disabled = true;
+      btn.textContent = 'Testing...';
+
+      let step = 0;
+      const total = 36;
+      let down = 486, up = 94, ping = 9;
+
+      const t = setInterval(() => {
+        step++;
+        const pct = Math.round((step / total) * 100);
+        document.getElementById('stPct').textContent = pct + '%';
+        document.getElementById('stBar').style.width = pct + '%';
+
+        if (step <= 8) {
+          document.getElementById('stStatus').textContent = 'Step 1 of 3: Checking responsiveness (Ping)...';
+          ping = Math.round(8 + Math.random() * 4);
+          document.getElementById('stPing').textContent = ping;
+        } else if (step <= 24) {
+          document.getElementById('stStatus').textContent = 'Step 2 of 3: Testing Download Speed...';
+          down = 468 + Math.random() * 28;
+          document.getElementById('stDown').textContent = down.toFixed(1);
+        } else {
+          document.getElementById('stStatus').textContent = 'Step 3 of 3: Testing Upload Speed...';
+          up = 90 + Math.random() * 8;
+          document.getElementById('stUp').textContent = up.toFixed(1);
+        }
+
+        if (step >= total) {
+          clearInterval(t);
+          speedRunning = false;
+          btn.disabled = false;
+          btn.textContent = '▶ Start Speed Test';
+          document.getElementById('stStatus').textContent = 'Speed Test Complete';
+          const pctPlan = Math.min(100, Math.round((down / 500) * 100));
+          document.getElementById('stVerdict').innerHTML =
+            `<strong style="color: var(--green);">What this means:</strong> Your internet is running at <strong>${pctPlan}% of your 500 Mbps plan</strong> (${down.toFixed(0)} Mbps down, ${ping} ms ping). Great for 4K streaming, HD video calls, and lag-free gaming.`;
+          speedHistory.unshift({ time: 'Just now', down, up, ping, verdict: 'Excellent' });
+          renderSpeedHistory();
+        }
+      }, 90);
     }
 
-    function drawTrafficChart() {
+    // --- CHART ---
+    function drawChart() {
       const canvas = document.getElementById('trafficCanvas');
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
@@ -1275,267 +983,91 @@ cd netpulse && sudo python3 server.py --port 8080 --dns-port 53</pre>
       const ctx = canvas.getContext('2d');
       ctx.scale(dpr, dpr);
 
-      const w = rect.width;
-      const h = rect.height;
+      const w = rect.width, h = rect.height;
       ctx.clearRect(0, 0, w, h);
 
       const maxVal = Math.max(250, ...downSeries) * 1.15;
-      const padLeft = 42;
-      const padRight = 10;
-      const padTop = 10;
-      const padBottom = 18;
-      const plotW = w - padLeft - padRight;
-      const plotH = h - padTop - padBottom;
+      const padL = 44, padR = 10, padT = 10, padB = 18;
+      const plotW = w - padL - padR, plotH = h - padT - padB;
 
-      ctx.strokeStyle = 'rgba(68, 134, 164, 0.16)';
-      ctx.lineWidth = 1;
-      ctx.fillStyle = '#6e8499';
-      ctx.font = '10px monospace';
+      ctx.strokeStyle = 'rgba(88, 148, 178, 0.16)';
+      ctx.fillStyle = '#8297ab';
+      ctx.font = '11px sans-serif';
       for (let i = 0; i <= 3; i++) {
-        const y = padTop + (plotH / 3) * i;
-        ctx.beginPath();
-        ctx.moveTo(padLeft, y);
-        ctx.lineTo(w - padRight, y);
-        ctx.stroke();
-        const val = Math.round(maxVal * (1 - i / 3));
-        ctx.fillText(val + 'M', 4, y + 3);
+        const y = padT + (plotH / 3) * i;
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+        ctx.fillText(Math.round(maxVal * (1 - i / 3)) + 'M', 4, y + 4);
       }
 
-      function plotLine(series, color, fillAlpha) {
+      function line(arr, col, alpha) {
         ctx.beginPath();
-        series.forEach((v, idx) => {
-          const x = padLeft + (idx / (historyPoints - 1)) * plotW;
-          const y = padTop + plotH - (v / maxVal) * plotH;
-          if (idx === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
+        arr.forEach((v, i) => {
+          const x = padL + (i / (arr.length - 1)) * plotW;
+          const y = padT + plotH - (v / maxVal) * plotH;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         });
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        ctx.lineTo(padLeft + plotW, padTop + plotH);
-        ctx.lineTo(padLeft, padTop + plotH);
-        ctx.closePath();
-        ctx.globalAlpha = fillAlpha;
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.globalAlpha = 1;
+        ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.stroke();
+        ctx.lineTo(padL + plotW, padT + plotH); ctx.lineTo(padL, padT + plotH); ctx.closePath();
+        ctx.globalAlpha = alpha; ctx.fillStyle = col; ctx.fill(); ctx.globalAlpha = 1;
       }
 
-      plotLine(downSeries, '#469ab8', 0.16);
-      plotLine(upSeries, '#3d997a', 0.14);
+      line(downSeries, '#54a8c7', 0.16);
+      line(upSeries, '#45a382', 0.14);
     }
 
-    let speedTestRunning = false;
-    let stCurve = [0];
-
-    function renderSpeedHistory() {
-      const el = document.getElementById('speedHistoryList');
-      el.innerHTML = speedTestHistory.map(item => `
-        <div class="hud-subcard p-2.5 flex items-center justify-between text-xs font-mono">
-          <div>
-            <div class="font-sans font-medium" style="color: var(--hud-text);">${item.time}</div>
-            <div class="text-[11px]" style="color: var(--hud-muted);">RTT: ${item.ping} ms · Grade ${item.grade}</div>
-          </div>
-          <div class="text-right">
-            <div style="color: var(--hud-cyan);">▼ ${item.down.toFixed(1)} Mbps</div>
-            <div style="color: var(--hud-emerald);">▲ ${item.up.toFixed(1)} Mbps</div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function drawSpeedTestChart() {
-      const canvas = document.getElementById('speedTestCanvas');
-      if (!canvas) return;
-      const rect = canvas.getBoundingClientRect();
-      if (rect.width === 0) return;
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      const ctx = canvas.getContext('2d');
-      ctx.scale(dpr, dpr);
-
-      const w = rect.width;
-      const h = rect.height;
-      ctx.clearRect(0, 0, w, h);
-
-      if (stCurve.length < 2) return;
-      const maxV = 600;
-      ctx.beginPath();
-      stCurve.forEach((v, i) => {
-        const x = (i / Math.max(40, stCurve.length - 1)) * w;
-        const y = h - 8 - (Math.min(v, maxV) / maxV) * (h - 16);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
-      ctx.strokeStyle = '#469ab8';
-      ctx.lineWidth = 2.2;
-      ctx.stroke();
-    }
-
-    async function startSpeedTest() {
-      if (speedTestRunning) return;
-      speedTestRunning = true;
-      stCurve = [0];
-      const btn = document.getElementById('runSpeedTestBtn');
-      const phaseEl = document.getElementById('stPhaseLabel');
-      const pctEl = document.getElementById('stPercentLabel');
-      const barEl = document.getElementById('stProgressBar');
-
-      btn.disabled = true;
-      btn.textContent = 'RUNNING DIAGNOSTIC...';
-
-      let measuredPing = 9.2;
-      try {
-        const t0 = performance.now();
-        await fetch(window.location.href, { method: 'HEAD', cache: 'no-store' });
-        measuredPing = Math.max(4.2, Math.min(85, performance.now() - t0));
-      } catch (_) {}
-
-      let step = 0;
-      const totalSteps = 42;
-      let finalDown = 486;
-      let finalUp = 94;
-
-      const timer = setInterval(() => {
-        step++;
-        const pct = Math.min(100, Math.round((step / totalSteps) * 100));
-        pctEl.textContent = pct + '%';
-        barEl.style.width = pct + '%';
-
-        if (step <= 8) {
-          phaseEl.textContent = 'PHASE 1/3 // PROBING UNLOADED RTT & JITTER...';
-          document.getElementById('stPingVal').textContent = (measuredPing + (Math.random() - 0.5) * 1.2).toFixed(1);
-          stCurve.push(25 + Math.random() * 15);
-        } else if (step <= 26) {
-          phaseEl.textContent = 'PHASE 2/3 // MULTI-STREAM DOWNLINK SATURATION (8x TLS)...';
-          const ramp = Math.min(1, (step - 8) / 10);
-          finalDown = 465 + ramp * 32 + (Math.random() - 0.4) * 16;
-          document.getElementById('stDownVal').textContent = finalDown.toFixed(1);
-          stCurve.push(finalDown);
-        } else {
-          phaseEl.textContent = 'PHASE 3/3 // UPLINK & BUFFERBLOAT VERIFICATION...';
-          finalUp = 92 + (Math.random() - 0.4) * 7;
-          document.getElementById('stUpVal').textContent = finalUp.toFixed(1);
-          stCurve.push(finalUp * 3.2);
-        }
-
-        drawSpeedTestChart();
-
-        if (step >= totalSteps) {
-          clearInterval(timer);
-          speedTestRunning = false;
-          btn.disabled = false;
-          btn.textContent = '▶ INITIATE WAN BENCHMARK';
-          phaseEl.textContent = 'DIAGNOSTIC COMPLETE — BUFFERBLOAT GRADE A+';
-          speedTestHistory.unshift({
-            time: 'Just now',
-            down: finalDown,
-            up: finalUp,
-            ping: Number(measuredPing.toFixed(1)),
-            grade: 'A+'
-          });
-          renderSpeedHistory();
-        }
-      }, 85);
-    }
-
-    const bgDnsSamples = [
-      ['ads.roku.com', '192.168.1.14', 'Living Room Apple TV'],
-      ['ipv4-c001-lax001-ix.1.oca.nflxvideo.net', '192.168.1.14', 'Living Room Apple TV'],
-      ['doubleclick.net', '192.168.1.41', 'iPhone 16 Pro'],
-      ['gateway.discord.gg', '192.168.1.22', "Alex's MacBook Pro"],
-      ['v10.events.data.microsoft.com', '192.168.1.55', 'Work Desktop PC'],
-      ['acr0.samsungcloudsolution.com', '192.168.1.14', 'Living Room Apple TV'],
-      ['rr3---sn-ab5l6nzy.googlevideo.com', '192.168.1.41', 'iPhone 16 Pro']
-    ];
-
+    // --- LIVE UPDATE TICK ---
     setInterval(() => {
-      if (!isCapturing) return;
-
+      if (!liveRunning) return;
       let sumDown = 0;
-      appsData.forEach(a => {
-        const lockObj = appLocks.find(l => a.id.includes(l.id));
-        if (lockObj && lockObj.locked) {
-          a.liveMbps = 0.0;
-          return;
-        }
-        const delta = (Math.random() - 0.48) * 3.0;
-        a.liveMbps = Math.max(0.4, a.liveMbps + delta);
-        a.totalGB += (a.liveMbps / 8000) * 0.4;
+      apps.forEach(a => {
+        if (appLocks[a.id]) { a.liveMbps = 0; return; }
+        a.liveMbps = Math.max(0.4, a.liveMbps + (Math.random() - 0.48) * 2.8);
+        a.todayGB += (a.liveMbps / 8000) * 0.4;
         sumDown += a.liveMbps;
       });
 
-      const curDown = Math.max(14, sumDown + Math.random() * 10);
-      const curUp = Math.max(3.5, curDown * 0.19 + Math.random() * 3.5);
-      if (curDown > peakDown) peakDown = curDown;
-      totalDataGB += (curDown / 8000) * 0.45;
-
-      downSeries.shift();
-      downSeries.push(curDown);
-      upSeries.shift();
-      upSeries.push(curUp);
-
-      document.getElementById('kpiDownload').textContent = curDown.toFixed(1);
-      document.getElementById('kpiUpload').textContent = curUp.toFixed(1);
-      document.getElementById('kpiPeakDown').textContent = peakDown.toFixed(1) + 'M';
-      document.getElementById('kpiTotalData').textContent = totalDataGB.toFixed(2) + ' GB';
-      document.getElementById('kpiPacketsSec').textContent = (curDown * 0.095).toFixed(1) + 'k pkt/s';
-
-      const loadPct = Math.min(99, Math.round((curDown / 500) * 100));
-      document.getElementById('reactorPct').textContent = loadPct + '%';
-      const dashLen = Math.round((loadPct / 100) * 214);
-      document.getElementById('reactorArc').setAttribute('stroke-dasharray', `${dashLen} 214`);
-
-      if (Math.random() < 0.65) {
-        const [dom, ip, dev] = bgDnsSamples[Math.floor(Math.random() * bgDnsSamples.length)];
-        const verdict = evaluateDomainSinkhole(dom);
-        const now = new Date();
-        const timeStr = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
-        totalDnsQueries++;
-        if (verdict.blocked) blockedDnsQueries++;
-        const action = verdict.blocked ? 'SINKHOLED' : 'ALLOWED';
-        const resp = verdict.blocked ? '0.0.0.0 (0.1 ms)' : '104.18.22.91 (2.8 ms)';
-        dnsQueryLog.unshift({
-          id: Date.now() + Math.random(),
-          time: timeStr,
-          clientIp: ip,
-          device: dev,
-          domain: dom,
-          qtype: 'A',
-          action,
-          reason: verdict.reason,
-          response: resp,
-          app: classifyDomainApp(dom)
-        });
-        if (dnsQueryLog.length > 60) dnsQueryLog.pop();
-        updateDnsKpis();
-        document.getElementById('jarvisTicker').textContent =
-          `${action}: ${dom} from ${dev} (${ip}) -> ${resp}`;
-        if (currentTab === 'dns') renderDnsTab();
+      const curDown = Math.max(12, sumDown + Math.random() * 8);
+      const curUp = Math.max(3, curDown * 0.19 + Math.random() * 3);
+      totalTodayGB += (curDown / 8000) * 0.4;
+      if (masterShieldOn && Math.random() < 0.5) {
+        totalBlocked++;
+        totalRequests += 4;
       }
 
-      if (currentTab === 'overview') {
+      downSeries.shift(); downSeries.push(curDown);
+      upSeries.shift(); upSeries.push(curUp);
+
+      const capPct = Math.min(100, Math.round((curDown / 500) * 100));
+      document.getElementById('kpiDown').textContent = curDown.toFixed(1);
+      document.getElementById('kpiUp').textContent = curUp.toFixed(1);
+      document.getElementById('capacityLabel').textContent = capPct + '% of plan';
+      document.getElementById('capacityBar').style.width = capPct + '%';
+      document.getElementById('kpiTotalToday').textContent = totalTodayGB.toFixed(1) + ' GB';
+      document.getElementById('kpiBlocked').textContent = totalBlocked.toLocaleString();
+      document.getElementById('kpiBlockedPct').textContent = ((totalBlocked / totalRequests) * 100).toFixed(1) + '%';
+
+      const top = [...apps].sort((a, b) => b.todayGB - a.todayGB)[0];
+      if (top) {
+        document.getElementById('kpiTopApp').textContent = `${top.name} (${top.activity.split(' ')[0]})`;
+        document.getElementById('kpiTopDevice').textContent = top.device;
+        document.getElementById('kpiTopGB').textContent = top.todayGB.toFixed(1) + ' GB';
+        document.getElementById('kpiTopPct').textContent = Math.round((top.todayGB / totalTodayGB) * 100) + '%';
+      }
+
+      if (activeTab === 'apps') {
         renderApps();
-        drawTrafficChart();
+        drawChart();
       }
-    }, 1300);
+    }, 1400);
 
-    window.addEventListener('resize', () => {
-      drawTrafficChart();
-      drawSpeedTestChart();
-    });
+    window.addEventListener('resize', drawChart);
 
     renderApps();
-    renderDnsTab();
-    renderMessages();
     renderDevices();
+    renderMessages();
+    renderBlocker();
     renderSpeedHistory();
-    setTimeout(() => {
-      drawTrafficChart();
-      drawSpeedTestChart();
-    }, 60);
+    setTimeout(drawChart, 60);
   </script>
 </body>
 </html>
